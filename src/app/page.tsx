@@ -1,9 +1,9 @@
 "use client";
 
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { demoEvents, demoStories } from "@/data/demo";
+import { demoEvents, demoStories, getEventsByYear } from "@/data/demo";
 import TimelineCard from "@/components/timeline/TimelineCard";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
@@ -148,6 +148,212 @@ function HowItWorksSection() {
               </p>
             </motion.div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlayYourStorySection() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentYearIndex, setCurrentYearIndex] = useState(-1);
+  const [currentEventIndex, setCurrentEventIndex] = useState(-1);
+  const [showEvent, setShowEvent] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const eventsByYear = getEventsByYear(demoEvents);
+  const years = Object.keys(eventsByYear);
+
+  const cleanup = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  const play = useCallback(() => {
+    cleanup();
+    setIsPlaying(true);
+    setCurrentYearIndex(0);
+    setCurrentEventIndex(-1);
+    setShowEvent(false);
+  }, [cleanup]);
+
+  useEffect(() => {
+    if (!isPlaying || currentYearIndex < 0) return;
+
+    if (currentYearIndex >= years.length) {
+      const t = setTimeout(() => {
+        setIsPlaying(false);
+        setCurrentYearIndex(-1);
+        setCurrentEventIndex(-1);
+        setShowEvent(false);
+      }, 2000);
+      timerRef.current = t;
+      return () => clearTimeout(t);
+    }
+
+    const yearEvents = eventsByYear[years[currentYearIndex]];
+
+    if (currentEventIndex < 0) {
+      // Show year number first, then first event
+      const t = setTimeout(() => {
+        setCurrentEventIndex(0);
+        setShowEvent(true);
+      }, 800);
+      timerRef.current = t;
+      return () => clearTimeout(t);
+    }
+
+    if (currentEventIndex < yearEvents.length - 1) {
+      // Show next event
+      const t = setTimeout(() => {
+        setShowEvent(false);
+        setTimeout(() => {
+          setCurrentEventIndex((prev) => prev + 1);
+          setShowEvent(true);
+        }, 200);
+      }, 1200);
+      timerRef.current = t;
+      return () => clearTimeout(t);
+    }
+
+    // Move to next year
+    const t = setTimeout(() => {
+      setShowEvent(false);
+      setTimeout(() => {
+        setCurrentYearIndex((prev) => prev + 1);
+        setCurrentEventIndex(-1);
+      }, 300);
+    }, 1200);
+    timerRef.current = t;
+    return () => clearTimeout(t);
+  }, [isPlaying, currentYearIndex, currentEventIndex, years, eventsByYear]);
+
+  useEffect(() => cleanup, [cleanup]);
+
+  const currentYear = currentYearIndex >= 0 && currentYearIndex < years.length ? years[currentYearIndex] : null;
+  const currentEvent = currentYear && currentEventIndex >= 0
+    ? eventsByYear[currentYear][currentEventIndex]
+    : null;
+
+  return (
+    <section className="relative py-[160px] px-6">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+          className="text-center mb-20"
+        >
+          <span className="text-[11px] uppercase tracking-[0.25em] text-chrono-muted mb-5 block">
+            Experience
+          </span>
+          <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight mb-5">
+            Play your
+            <br />
+            <span className="gradient-text">story</span>
+          </h2>
+          <p className="text-chrono-text-secondary max-w-md mx-auto text-sm leading-relaxed">
+            Watch your life unfold year by year in a cinematic sequence
+          </p>
+        </motion.div>
+
+        <div className="relative min-h-[320px] flex flex-col items-center justify-center">
+          {!isPlaying && currentYearIndex < 0 && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              onClick={play}
+              className="group flex items-center gap-4 px-10 py-5 bg-chrono-card/30 border border-chrono-border/15 rounded-2xl card-hover"
+            >
+              <div className="w-12 h-12 rounded-full border border-chrono-border/30 flex items-center justify-center group-hover:border-chrono-accent/30 transition-colors duration-500">
+                <svg className="w-5 h-5 text-chrono-accent/70 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className="text-base font-display font-semibold text-chrono-text">Play Your Story</div>
+                <div className="text-xs text-chrono-muted">{years[0]} — {years[years.length - 1]}</div>
+              </div>
+            </motion.button>
+          )}
+
+          {isPlaying && currentYearIndex >= 0 && currentYearIndex < years.length && (
+            <div className="w-full flex flex-col items-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentYear}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-center mb-10"
+                >
+                  <div className="text-7xl md:text-[8rem] font-display font-bold gradient-text leading-none">
+                    {currentYear}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              <div className="relative h-24 w-full max-w-lg flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  {showEvent && currentEvent && (
+                    <motion.div
+                      key={currentEvent.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute text-center"
+                    >
+                      <div className="text-lg md:text-xl font-display font-semibold text-chrono-text mb-1">
+                        {currentEvent.title}
+                      </div>
+                      {currentEvent.location && (
+                        <div className="text-xs text-chrono-muted">
+                          {currentEvent.location}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="flex items-center gap-2 mt-8">
+                {years.map((year, i) => (
+                  <div
+                    key={year}
+                    className={`h-0.5 rounded-full transition-all duration-500 ${
+                      i < currentYearIndex
+                        ? "w-8 bg-chrono-accent/40"
+                        : i === currentYearIndex
+                        ? "w-12 bg-chrono-accent/70"
+                        : "w-6 bg-chrono-border/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isPlaying && currentYearIndex >= years.length && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1 }}
+              className="text-center"
+            >
+              <div className="text-3xl md:text-4xl font-display font-bold gradient-text mb-4">
+                Your story continues
+              </div>
+              <button
+                onClick={play}
+                className="mt-4 px-6 py-2.5 text-sm text-chrono-text-secondary border border-chrono-border hover:border-chrono-text-secondary/30 hover:text-chrono-text rounded-full transition-all duration-500"
+              >
+                Replay
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
@@ -576,6 +782,7 @@ export default function Home() {
 
       <HeroSection />
       <HowItWorksSection />
+      <PlayYourStorySection />
       <FeaturesSection />
       <TimelinePreview />
       <MapPreview />
