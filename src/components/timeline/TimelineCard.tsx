@@ -21,13 +21,13 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
-        duration: 0.8,
+        duration: 1,
         delay: index * 0.05,
         ease: [0.16, 1, 0.3, 1],
       }}
       className={`relative group ${isLeft ? "md:pr-12" : "md:pl-12"}`}
     >
-      <div className="relative bg-chrono-card/60 rounded-2xl overflow-hidden border border-chrono-border/20 card-hover">
+      <div className="relative bg-chrono-card/40 rounded-2xl overflow-hidden border border-chrono-border/10 card-hover">
         {event.imageUrl && (
           <div className="relative h-48 md:h-56 overflow-hidden">
             <Image

@@ -76,7 +76,7 @@ export default function Navigation() {
             <button className="px-5 py-2 text-sm text-chrono-text-secondary hover:text-chrono-text transition-colors">
               Sign In
             </button>
-            <button className="px-5 py-2 text-sm bg-chrono-text text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors">
+            <button className="px-5 py-2 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500">
               Get Started
             </button>
           </div>
