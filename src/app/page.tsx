@@ -3,15 +3,11 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { demoEvents, demoStories } from "@/data/demo";
 import TimelineCard from "@/components/timeline/TimelineCard";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
-
-const ParticleField = dynamic(() => import("@/components/three/ParticleField"), {
-  ssr: false,
-});
+import ParticleField from "@/components/three/ParticleField";
 
 function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
