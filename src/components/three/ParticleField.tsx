@@ -2,15 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
-interface Node {
+interface Star {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
   radius: number;
-  opacity: number;
-  pulseSpeed: number;
-  pulseOffset: number;
+  baseOpacity: number;
+  breathSpeed: number;
+  breathOffset: number;
 }
 
 export default function ParticleField() {
@@ -33,20 +31,17 @@ export default function ParticleField() {
     resize();
     window.addEventListener("resize", resize);
 
-    const nodeCount = 40;
-    const connectionDistance = 180;
+    const starCount = 60;
     const w = () => canvas.offsetWidth;
     const h = () => canvas.offsetHeight;
 
-    const nodes: Node[] = Array.from({ length: nodeCount }, () => ({
+    const stars: Star[] = Array.from({ length: starCount }, () => ({
       x: Math.random() * w(),
       y: Math.random() * h(),
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.15,
-      radius: Math.random() * 1.5 + 0.5,
-      opacity: Math.random() * 0.4 + 0.1,
-      pulseSpeed: Math.random() * 0.001 + 0.0005,
-      pulseOffset: Math.random() * Math.PI * 2,
+      radius: Math.random() * 1.2 + 0.3,
+      baseOpacity: Math.random() * 0.4 + 0.1,
+      breathSpeed: Math.random() * 0.0015 + 0.0005,
+      breathOffset: Math.random() * Math.PI * 2,
     }));
 
     const draw = (time: number) => {
@@ -54,52 +49,21 @@ export default function ParticleField() {
       const height = h();
       ctx.clearRect(0, 0, width, height);
 
-      for (const node of nodes) {
-        node.x += node.vx;
-        node.y += node.vy;
+      for (const star of stars) {
+        const breath = Math.sin(time * star.breathSpeed + star.breathOffset) * 0.5 + 0.5;
+        const opacity = star.baseOpacity * (0.3 + breath * 0.7);
+        const radius = star.radius * (0.85 + breath * 0.3);
 
-        if (node.x < 0 || node.x > width) node.vx *= -1;
-        if (node.y < 0 || node.y > height) node.vy *= -1;
-
-        node.x = Math.max(0, Math.min(width, node.x));
-        node.y = Math.max(0, Math.min(height, node.y));
-      }
-
-      // Draw connections
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < connectionDistance) {
-            const alpha = (1 - dist / connectionDistance) * 0.06;
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(199, 194, 186, ${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw nodes
-      for (const node of nodes) {
-        const pulse = Math.sin(time * node.pulseSpeed + node.pulseOffset) * 0.5 + 0.5;
-        const currentOpacity = node.opacity * (0.6 + pulse * 0.4);
-        const currentRadius = node.radius * (0.9 + pulse * 0.2);
-
-        // Glow
+        // Soft glow
         ctx.beginPath();
-        ctx.arc(node.x, node.y, currentRadius * 4, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(199, 194, 186, ${currentOpacity * 0.08})`;
+        ctx.arc(star.x, star.y, radius * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201, 169, 110, ${opacity * 0.06})`;
         ctx.fill();
 
-        // Core
+        // Core dot
         ctx.beginPath();
-        ctx.arc(node.x, node.y, currentRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(199, 194, 186, ${currentOpacity})`;
+        ctx.arc(star.x, star.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(240, 235, 225, ${opacity})`;
         ctx.fill();
       }
 
@@ -118,7 +82,7 @@ export default function ParticleField() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 z-0 w-full h-full"
-      style={{ opacity: 0.7 }}
+      style={{ opacity: 0.8 }}
     />
   );
 }

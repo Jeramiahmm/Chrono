@@ -5,11 +5,11 @@ import { useState, useCallback, useRef } from "react";
 import { TimelineEvent } from "@/data/demo";
 
 const categories = [
-  { value: "travel", label: "Travel", color: "#8A9098" },
-  { value: "career", label: "Career", color: "#C7C2BA" },
-  { value: "achievement", label: "Achievement", color: "#B8B3AB" },
-  { value: "education", label: "Education", color: "#9A9590" },
-  { value: "life", label: "Life", color: "#8A9A8A" },
+  { value: "travel", label: "Travel", color: "#C9A96E" },
+  { value: "career", label: "Career", color: "#D4B87A" },
+  { value: "achievement", label: "Achievement", color: "#C9A96E" },
+  { value: "education", label: "Education", color: "#A89060" },
+  { value: "life", label: "Life", color: "#B8A070" },
 ];
 
 const chapters = [
@@ -115,7 +115,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.97 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl md:max-h-[85vh] z-[70] bg-chrono-surface rounded-3xl border border-chrono-border/30 overflow-hidden flex flex-col"
+            className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl md:max-h-[85vh] z-[70] bg-chrono-surface border border-chrono-accent/15 overflow-hidden flex flex-col"
           >
             <AnimatePresence>
               {showSuccess && (
@@ -142,18 +142,18 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               )}
             </AnimatePresence>
 
-            <div className="flex items-center justify-between p-6 border-b border-chrono-border/20">
+            <div className="flex items-center justify-between p-6 border-b border-chrono-accent/10">
               <div>
-                <h2 className="text-xl font-display font-bold text-chrono-text">
+                <h2 className="text-xl font-display font-light text-chrono-text">
                   {isEditing ? "Edit Event" : "New Event"}
                 </h2>
-                <p className="text-xs text-chrono-muted mt-1">
+                <p className="text-xs font-body font-light text-chrono-muted mt-1">
                   {isEditing ? "Update your memory" : "Add a moment to your timeline"}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text hover:bg-chrono-border/40 transition-all"
+                className="w-8 h-8 bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text hover:bg-chrono-border/40 transition-all"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -169,7 +169,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`relative h-40 rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden ${
+                  className={`relative h-40 border-2 border-dashed transition-all cursor-pointer overflow-hidden ${
                     dragOver
                       ? "border-chrono-accent/40 bg-chrono-accent/5"
                       : form.imageUrl
@@ -206,7 +206,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                   value={form.title}
                   onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); setErrors((er) => ({ ...er, title: "" })); }}
                   placeholder="What happened?"
-                  className={`w-full bg-chrono-card/40 rounded-xl px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border transition-colors outline-none focus:border-chrono-accent/40 ${
+                  className={`w-full bg-chrono-card/40 px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border transition-colors outline-none focus:border-chrono-accent/40 ${
                     errors.title ? "border-red-500/40" : "border-chrono-border/20"
                   }`}
                 />
@@ -222,7 +222,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                     type="date"
                     value={form.date}
                     onChange={(e) => { setForm((f) => ({ ...f, date: e.target.value })); setErrors((er) => ({ ...er, date: "" })); }}
-                    className={`w-full bg-chrono-card/40 rounded-xl px-4 py-3 text-sm text-chrono-text border transition-colors outline-none focus:border-chrono-accent/40 [color-scheme:dark] ${
+                    className={`w-full bg-chrono-card/40 px-4 py-3 text-sm text-chrono-text border transition-colors outline-none focus:border-chrono-accent/40 [color-scheme:dark] ${
                       errors.date ? "border-red-500/40" : "border-chrono-border/20"
                     }`}
                   />
@@ -235,7 +235,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                     placeholder="City, State"
-                    className="w-full bg-chrono-card/40 rounded-xl px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border border-chrono-border/20 transition-colors outline-none focus:border-chrono-accent/40"
+                    className="w-full bg-chrono-card/40 px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border border-chrono-border/20 transition-colors outline-none focus:border-chrono-accent/40"
                   />
                 </div>
               </div>
@@ -247,7 +247,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="Tell the story behind this moment..."
                   rows={3}
-                  className="w-full bg-chrono-card/40 rounded-xl px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border border-chrono-border/20 transition-colors outline-none focus:border-chrono-accent/40 resize-none"
+                  className="w-full bg-chrono-card/40 px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border border-chrono-border/20 transition-colors outline-none focus:border-chrono-accent/40 resize-none"
                 />
               </div>
 
@@ -258,7 +258,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                     <button
                       key={cat.value}
                       onClick={() => setForm((f) => ({ ...f, category: f.category === cat.value ? "" : cat.value }))}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all ${
                         form.category === cat.value
                           ? "border-2"
                           : "border border-chrono-border/20 text-chrono-text-secondary hover:border-chrono-border/40"
@@ -284,7 +284,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                     <button
                       key={ch}
                       onClick={() => setForm((f) => ({ ...f, chapter: f.chapter === ch ? "" : ch }))}
-                      className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                      className={`px-3 py-1.5 text-xs transition-all ${
                         form.chapter === ch
                           ? "bg-chrono-accent/10 border border-chrono-accent/30 text-chrono-accent"
                           : "bg-chrono-card/30 border border-chrono-border/20 text-chrono-text-secondary hover:border-chrono-border/40"
@@ -297,7 +297,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               </div>
             </div>
 
-            <div className="p-6 border-t border-chrono-border/20 flex items-center justify-between">
+            <div className="p-6 border-t border-chrono-accent/10 flex items-center justify-between">
               {isEditing && onDelete ? (
                 <button
                   onClick={() => onDelete(event!.id)}
@@ -318,7 +318,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-6 py-2.5 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500 disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 text-sm font-body font-light bg-chrono-accent text-chrono-bg rounded-none hover:bg-chrono-accent-warm transition-colors duration-500 disabled:opacity-50 flex items-center gap-2"
                 >
                   {saving && (
                     <div className="w-3.5 h-3.5 border-2 border-chrono-bg/30 border-t-chrono-bg rounded-full animate-spin" />

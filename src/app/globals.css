@@ -3,10 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --chrono-bg: #0F0F10;
-  --chrono-surface: #131314;
-  --chrono-accent: #C7C2BA;
-  --chrono-glow: #C7C2BA;
+  --chrono-bg: #080808;
+  --chrono-surface: #0F0F0F;
+  --chrono-card: #141414;
+  --chrono-accent: #C9A96E;
+  --chrono-glow: rgba(201,169,110,0.5);
+  --chrono-text: #F0EBE1;
+  --chrono-muted: rgba(240,235,225,0.45);
 }
 
 * {
@@ -18,14 +21,58 @@
 html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: #1C1C1C transparent;
+  scrollbar-color: #1A1A1A transparent;
 }
 
 body {
   background: var(--chrono-bg);
-  color: #F2F2F2;
-  font-family: var(--font-body), system-ui, sans-serif;
+  color: var(--chrono-text);
+  font-family: "Jost", var(--font-body), system-ui, sans-serif;
   overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom gold cursor */
+@media (pointer: fine) {
+  body::after {
+    content: "";
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: #C9A96E;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+    left: var(--cursor-x, -100px);
+    top: var(--cursor-y, -100px);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(201,169,110,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: left 0.15s ease, top 0.15s ease, transform 0.15s ease;
+    left: var(--cursor-x, -100px);
+    top: var(--cursor-y, -100px);
+  }
+}
+
+/* Grain texture overlay */
+body > *:first-child::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
 }
 
 ::-webkit-scrollbar {
@@ -37,12 +84,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1C1C1C;
+  background: #1A1A1A;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2A2A2A;
+  background: rgba(201,169,110,0.3);
 }
 
 /* Custom utility classes */
@@ -52,40 +99,61 @@ body {
   }
 
   .glass {
-    background: rgba(15, 15, 16, 0.7);
+    background: rgba(8, 8, 8, 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(28, 28, 28, 0.5);
+    border: 1px solid rgba(201,169,110,0.12);
   }
 
   .glass-strong {
-    background: rgba(15, 15, 16, 0.94);
+    background: rgba(8, 8, 8, 0.94);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(28, 28, 28, 0.6);
+    border: 1px solid rgba(201,169,110,0.18);
   }
 
   .glow-accent {
-    box-shadow: 0 0 40px rgba(199, 194, 186, 0.06),
-                0 0 80px rgba(199, 194, 186, 0.02);
+    box-shadow: 0 0 40px rgba(201,169,110,0.06),
+                0 0 80px rgba(201,169,110,0.02);
   }
 
   .glow-text {
-    text-shadow: 0 0 40px rgba(199, 194, 186, 0.1);
+    text-shadow: 0 0 40px rgba(201,169,110,0.15);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #F2F2F2 0%, #C7C2BA 60%, #A1A1A1 100%);
+    background: linear-gradient(135deg, #F0EBE1 0%, #C9A96E 60%, #A89060 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .gradient-text-subtle {
-    background: linear-gradient(135deg, #F2F2F2 0%, #A1A1A1 100%);
+    background: linear-gradient(135deg, #F0EBE1 0%, rgba(240,235,225,0.65) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .gold-border {
+    border: 1px solid rgba(201,169,110,0.18);
+  }
+
+  .gold-border-hover:hover {
+    border-color: rgba(201,169,110,0.4);
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: #C9A96E;
+    font-family: "Jost", var(--font-body), system-ui, sans-serif;
+    font-weight: 300;
+  }
+
+  .archival-img {
+    filter: brightness(0.88) saturate(0.6) sepia(0.25);
   }
 
   .noise-bg {
@@ -105,8 +173,8 @@ body {
     background: linear-gradient(
       180deg,
       transparent 0%,
-      rgba(199, 194, 186, 0.12) 10%,
-      rgba(199, 194, 186, 0.12) 90%,
+      rgba(201,169,110,0.12) 10%,
+      rgba(201,169,110,0.12) 90%,
       transparent 100%
     );
   }
@@ -118,10 +186,10 @@ body {
   }
 
   .card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3),
-                0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: rgba(28, 28, 28, 0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(201,169,110,0.04);
+    border-color: rgba(201,169,110,0.4);
   }
 
   .mask-gradient-b {
@@ -132,6 +200,17 @@ body {
   .mask-gradient-t {
     mask-image: linear-gradient(to top, black 70%, transparent 100%);
     -webkit-mask-image: linear-gradient(to top, black 70%, transparent 100%);
+  }
+
+  .watermark {
+    position: absolute;
+    font-family: "Cormorant Garamond", var(--font-display), Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(120px, 15vw, 240px);
+    color: rgba(201,169,110,0.03);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
   }
 }
 
@@ -144,8 +223,26 @@ html.lenis {
   scroll-behavior: auto;
 }
 
-/* Selection color */
+/* Selection color — gold */
 ::selection {
-  background: rgba(199, 194, 186, 0.15);
-  color: #F2F2F2;
+  background: rgba(201,169,110,0.2);
+  color: #F0EBE1;
+}
+
+/* Restore cursor on touch devices */
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+/* Links and buttons restore pointer on hover */
+a, button, [role="button"], input, select, textarea {
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  a, button, [role="button"], input, select, textarea {
+    cursor: auto;
+  }
 }
