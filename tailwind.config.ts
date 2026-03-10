@@ -10,31 +10,32 @@ const config: Config = {
     extend: {
       colors: {
         chrono: {
-          bg: "#0F0F10",
-          surface: "#131314",
-          card: "#181819",
-          border: "#1C1C1C",
-          accent: "#C7C2BA",
-          "accent-warm": "#B8B3AB",
-          "accent-glow": "#C7C2BA",
-          muted: "#5A5A5A",
-          text: "#F2F2F2",
-          "text-secondary": "#A1A1A1",
+          bg: "#080808",
+          surface: "#0F0F0F",
+          card: "#141414",
+          border: "#1A1A1A",
+          accent: "#C9A96E",
+          "accent-warm": "#D4B87A",
+          "accent-glow": "rgba(201,169,110,0.5)",
+          muted: "rgba(240,235,225,0.45)",
+          text: "#F0EBE1",
+          "text-secondary": "rgba(240,235,225,0.65)",
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "Georgia", "serif"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["Cormorant Garamond", "var(--font-display)", "Georgia", "serif"],
+        body: ["Jost", "var(--font-body)", "system-ui", "sans-serif"],
       },
       animation: {
         "fade-in": "fadeIn 1.2s ease-out forwards",
-        "slide-up": "slideUp 1.2s ease-out forwards",
+        "slide-up": "slideUp 1s ease-out forwards",
         "scale-in": "scaleIn 1s ease-out forwards",
         float: "float 10s ease-in-out infinite",
         "pulse-glow": "pulseGlow 5s ease-in-out infinite",
         shimmer: "shimmer 3s linear infinite",
-        "constellation-drift": "constellationDrift 20s ease-in-out infinite",
-        "node-pulse": "nodePulse 4s ease-in-out infinite",
+        "star-twinkle": "starTwinkle 3s ease-in-out infinite",
+        "gold-pulse": "goldPulse 2.5s ease-in-out infinite",
+        "marker-ring": "markerRing 2s ease-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -57,15 +58,17 @@ const config: Config = {
           "0%, 100%": { opacity: "0.2" },
           "50%": { opacity: "0.6" },
         },
-        constellationDrift: {
-          "0%, 100%": { transform: "translate(0, 0)" },
-          "25%": { transform: "translate(3px, -5px)" },
-          "50%": { transform: "translate(-2px, 3px)" },
-          "75%": { transform: "translate(4px, 2px)" },
+        starTwinkle: {
+          "0%, 100%": { opacity: "0.15", transform: "scale(0.8)" },
+          "50%": { opacity: "0.7", transform: "scale(1.2)" },
         },
-        nodePulse: {
-          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
-          "50%": { opacity: "0.8", transform: "scale(1.2)" },
+        goldPulse: {
+          "0%, 100%": { boxShadow: "0 0 10px rgba(201,169,110,0.3)" },
+          "50%": { boxShadow: "0 0 25px rgba(201,169,110,0.6)" },
+        },
+        markerRing: {
+          "0%": { transform: "scale(1)", opacity: "0.6" },
+          "100%": { transform: "scale(2.5)", opacity: "0" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },

@@ -40,15 +40,15 @@ export default function EmptyState({ title, description, actionLabel, onAction, 
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center justify-center py-24 px-6 text-center"
     >
-      <div className="w-20 h-20 rounded-2xl bg-chrono-card/40 border border-chrono-border/20 flex items-center justify-center text-chrono-muted/30 mb-6">
+      <div className="w-20 h-20 bg-chrono-card/40 border border-chrono-accent/10 flex items-center justify-center text-chrono-accent/30 mb-6">
         {icons[icon]}
       </div>
-      <h3 className="text-xl font-display font-semibold text-chrono-text mb-2">{title}</h3>
-      <p className="text-sm text-chrono-text-secondary max-w-sm leading-relaxed">{description}</p>
+      <h3 className="text-xl font-display font-light text-chrono-text mb-2">{title}</h3>
+      <p className="text-sm font-body font-light text-chrono-text-secondary max-w-sm leading-relaxed">{description}</p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="mt-8 px-6 py-2.5 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500"
+          className="mt-8 px-8 py-3 text-sm font-body font-light bg-chrono-accent text-chrono-bg rounded-none hover:bg-chrono-accent-warm transition-colors duration-500"
         >
           {actionLabel}
         </button>

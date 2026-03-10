@@ -106,13 +106,13 @@ export default function TimelinePage() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-4xl mx-auto text-center"
         >
-          <span className="text-[11px] uppercase tracking-[0.25em] text-chrono-muted mb-5 block">
+          <span className="section-label mb-5 block">
             Your Journey
           </span>
-          <h1 className="text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight">
-            <span className="gradient-text">Timeline</span>
+          <h1 className="text-5xl md:text-7xl font-display font-light mb-6 tracking-tight">
+            <em className="gradient-text">Timeline</em>
           </h1>
-          <p className="text-base text-chrono-text-secondary max-w-md mx-auto mb-12 leading-relaxed">
+          <p className="text-base font-body font-light text-chrono-text-secondary max-w-md mx-auto mb-12 leading-relaxed">
             Every moment that shaped your story, beautifully organized
             and brought to life.
           </p>
@@ -120,7 +120,7 @@ export default function TimelinePage() {
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }}
-              className="px-6 py-2.5 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500 flex items-center gap-2"
+              className="px-6 py-2.5 text-sm font-body font-light bg-chrono-accent text-chrono-bg rounded-none hover:bg-chrono-accent-warm transition-colors duration-500 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -129,10 +129,10 @@ export default function TimelinePage() {
             </button>
             <button
               onClick={() => setDemoMode(!demoMode)}
-              className={`px-5 py-2.5 text-sm rounded-full transition-all duration-500 border ${
+              className={`px-5 py-2.5 text-sm font-body font-light rounded-none transition-all duration-500 border ${
                 demoMode
-                  ? "border-chrono-accent/20 text-chrono-accent bg-chrono-accent/5"
-                  : "border-chrono-border text-chrono-text-secondary hover:border-chrono-text-secondary/30"
+                  ? "border-chrono-accent/30 text-chrono-accent bg-chrono-accent/5"
+                  : "border-chrono-accent/15 text-chrono-text-secondary hover:border-chrono-accent/30"
               }`}
             >
               Demo Mode {demoMode ? "On" : "Off"}
@@ -154,10 +154,10 @@ export default function TimelinePage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
                 onClick={() => scrollToYear(year)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-5 py-2 text-sm font-body font-light transition-all rounded-none ${
                   activeYear === year
                     ? "bg-chrono-accent/10 border border-chrono-accent/30 text-chrono-accent"
-                    : "glass hover:bg-chrono-card/60"
+                    : "border border-chrono-accent/10 hover:border-chrono-accent/25 text-chrono-muted"
                 }`}
               >
                 {year}
@@ -175,7 +175,7 @@ export default function TimelinePage() {
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-20 left-1/2 -translate-x-1/2 z-30"
           >
-            <div className="px-4 py-1.5 rounded-full glass-strong text-xs font-display font-medium text-chrono-text flex items-center gap-2">
+            <div className="px-4 py-1.5 glass-strong text-xs font-body font-light text-chrono-text flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-chrono-accent/60" />
               {activeYear}
             </div>
@@ -228,13 +228,13 @@ export default function TimelinePage() {
           className="text-center mt-40"
         >
           <div className="inline-flex flex-col items-center gap-4">
-            <div className="w-3 h-3 rounded-full bg-chrono-accent/30" />
-            <p className="text-sm text-chrono-muted font-display italic">
+            <div className="w-2 h-2 rounded-full bg-chrono-accent/30" />
+            <p className="text-sm font-display font-light italic text-chrono-muted">
               Your story continues...
             </p>
             <button
               onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }}
-              className="mt-2 px-5 py-2 text-xs text-chrono-text-secondary border border-chrono-border hover:border-chrono-text-secondary/30 hover:text-chrono-text rounded-full transition-all duration-500"
+              className="mt-2 px-5 py-2 text-xs font-body font-light text-chrono-muted border border-chrono-accent/20 hover:border-chrono-accent/40 hover:text-chrono-text rounded-none transition-all duration-500"
             >
               Add Next Moment
             </button>

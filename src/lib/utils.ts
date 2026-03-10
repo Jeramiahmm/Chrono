@@ -24,17 +24,17 @@ export function formatDateShort(dateStr: string): string {
 export function getCategoryColor(category?: string): string {
   switch (category) {
     case "travel":
-      return "#8A9098";
+      return "#C9A96E";
     case "career":
-      return "#C7C2BA";
+      return "#D4B87A";
     case "achievement":
-      return "#B8B3AB";
+      return "#C9A96E";
     case "education":
-      return "#9A9590";
+      return "#A89060";
     case "life":
-      return "#8A9A8A";
+      return "#B8A070";
     default:
-      return "#A1A1A1";
+      return "#C9A96E";
   }
 }
 

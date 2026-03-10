@@ -14,6 +14,13 @@ interface YearSectionProps {
 export default function YearSection({ year, events, onEditEvent }: YearSectionProps) {
   return (
     <div className="relative">
+      {/* Ghost watermark year */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 pointer-events-none select-none z-0">
+        <span className="text-[clamp(120px,15vw,240px)] font-display font-light leading-none" style={{ color: "rgba(201,169,110,0.03)" }}>
+          {year}
+        </span>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -21,15 +28,10 @@ export default function YearSection({ year, events, onEditEvent }: YearSectionPr
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         className="sticky top-24 z-10 flex justify-center mb-16"
       >
-        <div className="relative">
-          <span className="text-7xl md:text-9xl font-display font-bold gradient-text opacity-[0.06] select-none">
+        <div className="relative text-center">
+          <span className="text-2xl md:text-3xl font-display font-light text-chrono-text">
             {year}
           </span>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl md:text-3xl font-display font-semibold text-chrono-text">
-              {year}
-            </span>
-          </div>
         </div>
       </motion.div>
 
@@ -39,7 +41,7 @@ export default function YearSection({ year, events, onEditEvent }: YearSectionPr
         viewport={{ once: true }}
         className="flex justify-center mb-10"
       >
-        <span className="text-xs text-chrono-muted uppercase tracking-[0.2em]">
+        <span className="section-label">
           {events.length} {events.length === 1 ? "moment" : "moments"}
         </span>
       </motion.div>
@@ -54,7 +56,7 @@ export default function YearSection({ year, events, onEditEvent }: YearSectionPr
             className="w-full h-full origin-top"
             style={{
               background:
-                "linear-gradient(180deg, transparent 0%, rgba(199,194,186,0.08) 10%, rgba(199,194,186,0.08) 90%, transparent 100%)",
+                "linear-gradient(180deg, transparent 0%, rgba(201,169,110,0.08) 10%, rgba(201,169,110,0.08) 90%, transparent 100%)",
             }}
           />
         </div>
@@ -75,7 +77,8 @@ export default function YearSection({ year, events, onEditEvent }: YearSectionPr
                     whileInView={{ scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="w-2.5 h-2.5 rounded-full bg-chrono-accent/30 ring-4 ring-chrono-bg"
+                    className="w-2.5 h-2.5 rounded-full ring-4 ring-chrono-bg"
+                    style={{ backgroundColor: "rgba(201,169,110,0.4)" }}
                   />
                 </div>
 

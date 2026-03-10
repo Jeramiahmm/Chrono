@@ -27,77 +27,73 @@ export default function SettingsPage() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-4xl mx-auto text-center"
         >
-          <span className="text-[11px] uppercase tracking-[0.25em] text-chrono-muted mb-5 block">
-            Account
-          </span>
-          <h1 className="text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight">
-            <span className="gradient-text">Settings</span>
+          <span className="section-label mb-5 block">Account</span>
+          <h1 className="text-5xl md:text-7xl font-display font-light mb-6 tracking-tight">
+            <em className="gradient-text">Settings</em>
           </h1>
         </motion.div>
       </section>
 
       <section className="px-6">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Profile card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-chrono-card/30 rounded-2xl p-7 border border-chrono-border/10"
+            className="bg-chrono-card/30 p-7 border border-chrono-accent/10"
           >
-            <h3 className="text-sm font-display font-semibold text-chrono-text mb-4">Profile</h3>
+            <h3 className="text-sm font-display font-light text-chrono-text mb-4">Profile</h3>
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-chrono-border/30 flex items-center justify-center text-chrono-text text-xl font-medium">
+              <div className="w-16 h-16 border border-chrono-accent/20 flex items-center justify-center text-chrono-accent text-xl font-display font-light">
                 U
               </div>
               <div>
-                <div className="text-chrono-text font-medium">Demo User</div>
-                <div className="text-sm text-chrono-muted">demo@chrono.app</div>
+                <div className="text-chrono-text font-body font-light">Demo User</div>
+                <div className="text-sm font-body font-light text-chrono-muted">demo@chrono.app</div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-1.5">Display Name</label>
+                <label className="section-label block mb-1.5">Display Name</label>
                 <input
                   type="text"
                   defaultValue="Demo User"
-                  className="w-full bg-chrono-bg/60 rounded-xl px-4 py-2.5 text-sm text-chrono-text border border-chrono-border/20 outline-none focus:border-chrono-accent/40 transition-colors"
+                  className="w-full bg-chrono-bg/60 px-4 py-2.5 text-sm font-body font-light text-chrono-text border border-chrono-accent/10 outline-none focus:border-chrono-accent/40 transition-colors"
                 />
               </div>
               <div>
-                <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-1.5">Email</label>
+                <label className="section-label block mb-1.5">Email</label>
                 <input
                   type="email"
                   defaultValue="demo@chrono.app"
-                  className="w-full bg-chrono-bg/60 rounded-xl px-4 py-2.5 text-sm text-chrono-text border border-chrono-border/20 outline-none focus:border-chrono-accent/40 transition-colors"
+                  className="w-full bg-chrono-bg/60 px-4 py-2.5 text-sm font-body font-light text-chrono-text border border-chrono-accent/10 outline-none focus:border-chrono-accent/40 transition-colors"
                 />
               </div>
             </div>
           </motion.div>
 
-          {/* Preferences */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-chrono-card/30 rounded-2xl p-7 border border-chrono-border/10"
+            className="bg-chrono-card/30 p-7 border border-chrono-accent/10"
           >
-            <h3 className="text-sm font-display font-semibold text-chrono-text mb-4">Preferences</h3>
+            <h3 className="text-sm font-display font-light text-chrono-text mb-4">Preferences</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-chrono-text">Demo Mode</div>
-                  <div className="text-xs text-chrono-muted">Show sample data on your timeline</div>
+                  <div className="text-sm font-body font-light text-chrono-text">Demo Mode</div>
+                  <div className="text-xs font-body font-light text-chrono-muted">Show sample data on your timeline</div>
                 </div>
                 <button
                   onClick={() => setDemoMode(!demoMode)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                  className={`relative w-11 h-6 transition-colors ${
                     demoMode ? "bg-chrono-accent/60" : "bg-chrono-border"
                   }`}
                 >
                   <div
-                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    className={`absolute top-0.5 w-5 h-5 bg-chrono-text transition-transform ${
                       demoMode ? "translate-x-[22px]" : "translate-x-0.5"
                     }`}
                   />
@@ -106,17 +102,17 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-chrono-text">Story Notifications</div>
-                  <div className="text-xs text-chrono-muted">Get notified when new stories are ready</div>
+                  <div className="text-sm font-body font-light text-chrono-text">Story Notifications</div>
+                  <div className="text-xs font-body font-light text-chrono-muted">Get notified when new stories are ready</div>
                 </div>
                 <button
                   onClick={() => setNotifications(!notifications)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
+                  className={`relative w-11 h-6 transition-colors ${
                     notifications ? "bg-chrono-accent/60" : "bg-chrono-border"
                   }`}
                 >
                   <div
-                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                    className={`absolute top-0.5 w-5 h-5 bg-chrono-text transition-transform ${
                       notifications ? "translate-x-[22px]" : "translate-x-0.5"
                     }`}
                   />
@@ -125,14 +121,13 @@ export default function SettingsPage() {
             </div>
           </motion.div>
 
-          {/* Connected accounts */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-chrono-card/30 rounded-2xl p-7 border border-chrono-border/10"
+            className="bg-chrono-card/30 p-7 border border-chrono-accent/10"
           >
-            <h3 className="text-sm font-display font-semibold text-chrono-text mb-4">Connected Accounts</h3>
+            <h3 className="text-sm font-display font-light text-chrono-text mb-4">Connected Accounts</h3>
             <div className="space-y-3">
               {[
                 { name: "Google Calendar", connected: false },
@@ -140,19 +135,19 @@ export default function SettingsPage() {
               ].map((account) => (
                 <div key={account.name} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-chrono-bg/60 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-chrono-bg/60 border border-chrono-accent/8 flex items-center justify-center">
                       <svg className="w-4 h-4 text-chrono-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                       </svg>
                     </div>
                     <div>
-                      <div className="text-sm text-chrono-text">{account.name}</div>
-                      <div className="text-xs text-chrono-muted">
+                      <div className="text-sm font-body font-light text-chrono-text">{account.name}</div>
+                      <div className="text-xs font-body font-light text-chrono-muted">
                         {account.connected ? "Connected" : "Not connected"}
                       </div>
                     </div>
                   </div>
-                  <button className="px-4 py-1.5 text-xs rounded-full border border-chrono-border/30 text-chrono-text-secondary hover:text-chrono-text hover:border-chrono-border/60 transition-all">
+                  <button className="px-4 py-1.5 text-xs font-body font-light border border-chrono-accent/15 text-chrono-text-secondary hover:text-chrono-text hover:border-chrono-accent/30 transition-all">
                     {account.connected ? "Disconnect" : "Connect"}
                   </button>
                 </div>
@@ -160,33 +155,31 @@ export default function SettingsPage() {
             </div>
           </motion.div>
 
-          {/* Data management */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-chrono-card/30 rounded-2xl p-7 border border-chrono-border/10"
+            className="bg-chrono-card/30 p-7 border border-chrono-accent/10"
           >
-            <h3 className="text-sm font-display font-semibold text-chrono-text mb-4">Data</h3>
+            <h3 className="text-sm font-display font-light text-chrono-text mb-4">Data</h3>
             <div className="space-y-3">
-              <button className="text-sm text-chrono-text-secondary hover:text-chrono-text transition-colors">
+              <button className="text-sm font-body font-light text-chrono-text-secondary hover:text-chrono-accent transition-colors">
                 Export all data
               </button>
               <br />
               <button
                 onClick={handleClearOnboarding}
-                className="text-sm text-chrono-text-secondary hover:text-chrono-text transition-colors"
+                className="text-sm font-body font-light text-chrono-text-secondary hover:text-chrono-accent transition-colors"
               >
                 Reset onboarding
               </button>
               <br />
-              <button className="text-sm text-red-400/70 hover:text-red-400 transition-colors">
+              <button className="text-sm font-body font-light text-red-400/70 hover:text-red-400 transition-colors">
                 Delete all events
               </button>
             </div>
           </motion.div>
 
-          {/* Save button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +188,7 @@ export default function SettingsPage() {
           >
             <button
               onClick={handleSave}
-              className="px-6 py-2.5 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500"
+              className="px-8 py-3 text-sm font-body font-light bg-chrono-accent text-chrono-bg rounded-none hover:bg-chrono-accent-warm transition-colors duration-500"
             >
               {saved ? "Saved" : "Save Changes"}
             </button>

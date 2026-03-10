@@ -16,9 +16,9 @@ export default function CityChart({ data }: { data: CityData[] }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-chrono-card/40 rounded-2xl p-6 md:p-8 border border-chrono-border/20"
+      className="bg-chrono-card/40 p-6 md:p-8 border border-chrono-accent/10"
     >
-      <h3 className="text-lg font-display font-semibold text-chrono-text mb-6">
+      <h3 className="text-lg font-display font-light text-chrono-text mb-6">
         Most Visited Cities
       </h3>
 
@@ -32,10 +32,10 @@ export default function CityChart({ data }: { data: CityData[] }) {
             transition={{ delay: 0.2 + i * 0.08 }}
             className="flex items-center gap-4"
           >
-            <div className="w-24 md:w-32 text-sm text-chrono-text-secondary truncate text-right flex-shrink-0">
+            <div className="w-24 md:w-32 text-sm font-body font-light text-chrono-text-secondary truncate text-right flex-shrink-0">
               {item.city}
             </div>
-            <div className="flex-1 h-2 bg-chrono-bg rounded-full overflow-hidden">
+            <div className="flex-1 h-[2px] bg-chrono-bg overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 whileInView={{ width: `${(item.count / maxCount) * 100}%` }}
@@ -45,10 +45,10 @@ export default function CityChart({ data }: { data: CityData[] }) {
                   delay: 0.3 + i * 0.1,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                className="h-full rounded-full bg-gradient-to-r from-chrono-accent-warm/60 to-chrono-accent/60"
+                className="h-full bg-gradient-to-r from-chrono-accent/40 to-chrono-accent/70"
               />
             </div>
-            <span className="text-sm font-medium text-chrono-text w-6 text-right">
+            <span className="text-sm font-body font-light text-chrono-text w-6 text-right">
               {item.count}
             </span>
           </motion.div>

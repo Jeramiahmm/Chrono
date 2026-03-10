@@ -73,10 +73,10 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                 className="flex items-center gap-2"
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-500 ${
+                  className={`w-8 h-8 flex items-center justify-center text-xs font-medium transition-all duration-500 ${
                     i <= step
-                      ? "bg-chrono-text text-chrono-bg"
-                      : "bg-chrono-card border border-chrono-border text-chrono-muted"
+                      ? "bg-chrono-accent text-chrono-bg"
+                      : "bg-chrono-card border border-chrono-accent/15 text-chrono-muted"
                   }`}
                 >
                   {i < step ? (
@@ -92,7 +92,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                 </span>
               </button>
               {i < steps.length - 1 && (
-                <div className={`w-12 h-px transition-colors duration-500 ${i < step ? "bg-chrono-text" : "bg-chrono-border"}`} />
+                <div className={`w-12 h-px transition-colors duration-500 ${i < step ? "bg-chrono-accent" : "bg-chrono-accent/10"}`} />
               )}
             </div>
           ))}
@@ -120,10 +120,10 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         <div className="flex items-center justify-between mt-10">
           <button
             onClick={prev}
-            className={`px-6 py-2.5 text-sm rounded-full transition-all ${
+            className={`px-6 py-2.5 text-sm rounded-none transition-all ${
               step === 0
                 ? "opacity-0 pointer-events-none"
-                : "text-chrono-text-secondary hover:text-chrono-text border border-chrono-border/40 hover:border-chrono-border"
+                : "text-chrono-text-secondary hover:text-chrono-text border border-chrono-accent/15 hover:border-chrono-accent/30"
             }`}
           >
             Back
@@ -132,7 +132,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           {step < steps.length - 1 && (
             <button
               onClick={next}
-              className="px-8 py-2.5 text-sm bg-white text-chrono-bg rounded-full font-medium hover:bg-chrono-accent transition-colors duration-500"
+              className="px-8 py-2.5 text-sm font-body font-light bg-chrono-accent text-chrono-bg rounded-none hover:bg-chrono-accent-warm transition-colors duration-500"
             >
               Continue
             </button>
@@ -249,9 +249,9 @@ function ExplainStep() {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15 + i * 0.12 }}
-            className="flex items-start gap-5 bg-chrono-card/30 rounded-2xl p-5 border border-chrono-border/15"
+            className="flex items-start gap-5 bg-chrono-card/30 p-5 border border-chrono-accent/15"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-display font-bold flex-shrink-0 bg-chrono-border/20 text-chrono-accent">
+            <div className="w-10 h-10 flex items-center justify-center text-sm font-display font-bold flex-shrink-0 bg-chrono-border/20 text-chrono-accent">
               {s.number}
             </div>
             <div>
@@ -330,16 +330,16 @@ function ChooseStep({ onComplete }: { onComplete: (choice: "demo" | "manual" | "
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + i * 0.1 }}
             onClick={() => onComplete(option.id)}
-            className="w-full group relative bg-chrono-card/30 rounded-2xl p-5 border border-chrono-border/15 hover:border-chrono-border/40 transition-all text-left flex items-start gap-5 card-hover"
+            className="w-full group relative bg-chrono-card/30 p-5 border border-chrono-accent/15 hover:border-chrono-border/40 transition-all text-left flex items-start gap-5 card-hover"
           >
-            <div className="relative w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-chrono-border/20 text-chrono-accent">
+            <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 bg-chrono-border/20 text-chrono-accent">
               {option.icon}
             </div>
             <div className="relative flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-display font-semibold text-chrono-text">{option.title}</h3>
                 {option.recommended && (
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-chrono-accent/10 text-chrono-accent font-medium uppercase tracking-wider">
+                  <span className="px-2 py-0.5 text-[10px] bg-chrono-accent/10 text-chrono-accent font-medium uppercase tracking-wider">
                     Recommended
                   </span>
                 )}
