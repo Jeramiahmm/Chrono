@@ -29,6 +29,24 @@ const HERO_WORDS = ["beautifully", "elegantly", "perfectly", "intimately", "vivi
 
 function AnimatedWord() {
   const [index, setIndex] = useState(0);
+  const containerRef = useRef<HTMLSpanElement>(null);
+  const [fixedWidth, setFixedWidth] = useState<number>(0);
+
+  useEffect(() => {
+    // Measure the longest word to set a fixed container width
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    const measurer = document.createElement("span");
+    measurer.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;font-style:italic;font-size:1.35em;line-height:0.85;font-family:inherit;font-weight:inherit;";
+    container.appendChild(measurer);
+    let maxW = 0;
+    for (const word of HERO_WORDS) {
+      measurer.textContent = word;
+      maxW = Math.max(maxW, measurer.getBoundingClientRect().width);
+    }
+    container.removeChild(measurer);
+    setFixedWidth(Math.ceil(maxW) + 4);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -38,7 +56,11 @@ function AnimatedWord() {
   }, []);
 
   return (
-    <span className="inline-block relative overflow-hidden align-bottom" style={{ height: "1.15em", width: "auto" }}>
+    <span
+      ref={containerRef}
+      className="inline-block relative overflow-hidden align-bottom"
+      style={{ height: "1.15em", minWidth: fixedWidth > 0 ? fixedWidth : "7ch", width: fixedWidth > 0 ? fixedWidth : "7ch" }}
+    >
       <AnimatePresence mode="wait">
         <motion.span
           key={HERO_WORDS[index]}
@@ -46,7 +68,7 @@ function AnimatedWord() {
           animate={{ y: "0%", opacity: 1 }}
           exit={{ y: "-100%", opacity: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="inline-block italic"
+          className="absolute left-0 top-0 whitespace-nowrap italic"
           style={{ fontSize: "1.35em", lineHeight: "0.85" }}
         >
           {HERO_WORDS[index]}
@@ -148,6 +170,63 @@ function HeroSection() {
           </motion.div>
         </motion.div>
       </motion.div>
+    </section>
+  );
+}
+
+function OnThisDayWidget() {
+  const today = new Date();
+  const month = today.getMonth();
+  const day = today.getDate();
+
+  const matches = demoEvents.filter((e) => {
+    const d = new Date(e.date);
+    return d.getMonth() === month && d.getDate() === day && d.getFullYear() !== today.getFullYear();
+  });
+
+  return (
+    <section className="relative py-10 px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="border-t border-b border-white/[0.08] py-8">
+          <FadeUp>
+            <span className="section-label mb-6 block text-center">On This Day</span>
+          </FadeUp>
+
+          {matches.length > 0 ? (
+            <FadeUp delay={0.1}>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                {matches.map((event) => {
+                  const year = new Date(event.date).getFullYear();
+                  return (
+                    <div
+                      key={event.id}
+                      className="flex-shrink-0 w-60 px-5 py-4 border border-white/[0.08] bg-chrono-card/30 hover:border-white/20 transition-all"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg font-display font-bold text-chrono-text">{year}</span>
+                        {event.category && (
+                          <span className="px-2 py-0.5 text-[10px] font-body font-extralight border border-white/[0.08] rounded-full text-chrono-muted uppercase tracking-wider">
+                            {event.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-body font-light text-chrono-text leading-snug line-clamp-2">
+                        {event.title}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </FadeUp>
+          ) : (
+            <FadeUp delay={0.1}>
+              <p className="text-center text-sm font-body font-extralight italic" style={{ color: "rgba(240,235,225,0.45)" }}>
+                Nothing yet — but today could be the start of something worth remembering.
+              </p>
+            </FadeUp>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -760,6 +839,7 @@ export default function Home() {
       </AnimatePresence>
 
       <HeroSection />
+      <OnThisDayWidget />
       <MarqueeTicker />
       <HowItWorksSection />
       <PlayYourStorySection />

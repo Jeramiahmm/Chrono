@@ -18,6 +18,22 @@
   --muted: rgba(255,255,255,0.06);
 }
 
+html.light {
+  --chrono-bg: #F5F0E8;
+  --chrono-surface: #EDE8DE;
+  --chrono-card: #E4DDD0;
+  --chrono-accent: rgba(0,0,0,0.8);
+  --chrono-glow: rgba(0,0,0,0.15);
+  --chrono-text: #1A1814;
+  --chrono-muted: rgba(26,24,20,0.5);
+
+  --background: #F5F0E8;
+  --foreground: #1A1814;
+  --primary: rgba(0,0,0,0.8);
+  --border: rgba(0,0,0,0.12);
+  --muted: rgba(0,0,0,0.06);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -30,11 +46,16 @@ html {
   scrollbar-color: #1A1A1A transparent;
 }
 
+html.light {
+  scrollbar-color: #C8C0B4 transparent;
+}
+
 body {
   background: var(--chrono-bg);
   color: var(--chrono-text);
   font-family: var(--font-body), system-ui, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Grain texture overlay */
@@ -160,6 +181,15 @@ body::after {
     -webkit-mask-image: linear-gradient(to top, black 70%, transparent 100%);
   }
 
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .watermark {
     position: absolute;
     font-family: var(--font-display), Georgia, serif;
@@ -196,4 +226,44 @@ html.lenis {
     --muted: 0 0% 8%;
     --border: 0 0% 100%;
   }
+
+  html.light {
+    --background: 37 33% 94%;
+    --foreground: 40 10% 10%;
+    --primary: 0 0% 0%;
+    --muted: 37 20% 88%;
+    --border: 0 0% 0%;
+  }
+}
+
+/* Light mode glass overrides */
+html.light .glass {
+  background: rgba(245,240,232,0.7);
+  border-color: rgba(0,0,0,0.1);
+}
+
+html.light .glass-strong {
+  background: rgba(245,240,232,0.94);
+  border-color: rgba(0,0,0,0.12);
+}
+
+html.light .section-label {
+  color: rgba(0,0,0,0.6);
+}
+
+html.light body::after {
+  opacity: 0.02;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #C8C0B4;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.25);
+}
+
+html.light ::selection {
+  background: rgba(0,0,0,0.12);
+  color: #1A1814;
 }

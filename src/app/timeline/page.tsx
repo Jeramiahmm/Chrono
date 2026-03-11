@@ -29,6 +29,8 @@ const chapters: Record<string, { title: string; subtitle: string; startDate: str
   },
 };
 
+const CATEGORIES = ["All", "Travel", "Achievement", "Education", "Life", "Career"];
+
 function getChapterForYear(year: string) {
   switch (year) {
     case "2022": return chapters["college-start"];
@@ -38,14 +40,116 @@ function getChapterForYear(year: string) {
   }
 }
 
+function CategoryFilterBar({
+  selected,
+  onToggle,
+}: {
+  selected: Set<string>;
+  onToggle: (cat: string) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.6 }}
+      className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap"
+    >
+      {CATEGORIES.map((cat) => {
+        const isSelected = cat === "All" ? selected.size === 0 : selected.has(cat.toLowerCase());
+        return (
+          <button
+            key={cat}
+            onClick={() => onToggle(cat)}
+            className={`px-4 py-1.5 text-xs font-body font-light rounded-full transition-all duration-300 whitespace-nowrap border ${
+              isSelected
+                ? "bg-white text-black border-white"
+                : "bg-transparent text-chrono-muted border-white/[0.12] hover:border-white/25"
+            }`}
+          >
+            {cat}
+          </button>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+function YearScrubber({
+  years,
+  activeYear,
+  onYearClick,
+}: {
+  years: string[];
+  activeYear: string;
+  onYearClick: (year: string) => void;
+}) {
+  return (
+    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-center gap-0">
+      <div className="relative flex flex-col items-center">
+        {/* Vertical line */}
+        <div className="absolute top-0 bottom-0 w-px bg-white/[0.12]" />
+
+        {years.map((year) => {
+          const isActive = activeYear === year;
+          return (
+            <button
+              key={year}
+              onClick={() => onYearClick(year)}
+              className="relative flex items-center gap-3 py-4 group"
+            >
+              <div
+                className={`w-3 h-3 rounded-full border transition-all duration-300 z-10 ${
+                  isActive
+                    ? "bg-white border-white scale-110"
+                    : "bg-transparent border-white/30 group-hover:border-white/60"
+                }`}
+              />
+              <span
+                className={`text-xs font-body font-light transition-all duration-300 absolute left-full ml-2 whitespace-nowrap ${
+                  isActive ? "text-white opacity-100" : "text-chrono-muted opacity-0 group-hover:opacity-100"
+                }`}
+              >
+                {year}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function TimelinePage() {
   const [events, setEvents] = useState<TimelineEvent[]>(demoEvents);
   const [activeYear, setActiveYear] = useState<string>("");
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | undefined>();
   const [demoMode, setDemoMode] = useState(true);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
-  const eventsByYear = getEventsByYear(events);
+  const handleToggleCategory = useCallback((cat: string) => {
+    if (cat === "All") {
+      setSelectedCategories(new Set());
+      return;
+    }
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      const lower = cat.toLowerCase();
+      if (next.has(lower)) {
+        next.delete(lower);
+      } else {
+        next.add(lower);
+      }
+      return next;
+    });
+  }, []);
+
+  const filteredEvents = selectedCategories.size === 0
+    ? events
+    : events.filter((e) => e.category && selectedCategories.has(e.category));
+
+  const eventsByYear = getEventsByYear(filteredEvents);
+  const allYears = Object.keys(getEventsByYear(events));
   const years = Object.keys(eventsByYear);
 
   useEffect(() => {
@@ -117,7 +221,7 @@ export default function TimelinePage() {
             and brought to life.
           </p>
 
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3 mb-10">
             <button
               onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }}
               className="px-6 py-2.5 text-sm font-body font-light bg-white text-black rounded-full hover:bg-white/90 transition-colors duration-500 flex items-center gap-2"
@@ -138,16 +242,19 @@ export default function TimelinePage() {
               Demo Mode {demoMode ? "On" : "Off"}
             </button>
           </div>
+
+          {/* Category Filter Bar */}
+          <CategoryFilterBar selected={selectedCategories} onToggle={handleToggleCategory} />
         </motion.div>
 
-        {years.length > 0 && (
+        {allYears.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
             className="flex justify-center gap-3 mt-14"
           >
-            {years.map((year, i) => (
+            {allYears.map((year, i) => (
               <motion.button
                 key={year}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -183,7 +290,16 @@ export default function TimelinePage() {
         )}
       </AnimatePresence>
 
-      {events.length === 0 ? (
+      {/* Year Scrubber */}
+      <YearScrubber years={allYears} activeYear={activeYear} onYearClick={scrollToYear} />
+
+      {filteredEvents.length === 0 && selectedCategories.size > 0 ? (
+        <div className="text-center py-32">
+          <p className="text-sm font-body font-extralight text-chrono-muted italic">
+            No memories in the selected categories.
+          </p>
+        </div>
+      ) : events.length === 0 ? (
         <EmptyState
           icon="timeline"
           title="Your story starts here"
@@ -194,28 +310,37 @@ export default function TimelinePage() {
       ) : (
         <section className="px-6">
           <div className="space-y-28">
-            {years.map((year, i) => {
-              const chapter = getChapterForYear(year);
-              return (
-                <div key={year} data-year={year}>
-                  {chapter && (
-                    <ChapterHeader
-                      title={chapter.title}
-                      subtitle={chapter.subtitle}
+            <AnimatePresence mode="sync">
+              {years.map((year, i) => {
+                const chapter = getChapterForYear(year);
+                return (
+                  <motion.div
+                    key={year}
+                    data-year={year}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {chapter && (
+                      <ChapterHeader
+                        title={chapter.title}
+                        subtitle={chapter.subtitle}
+                      />
+                    )}
+                    <YearSection
+                      year={year}
+                      events={eventsByYear[year]}
+                      yearIndex={i}
+                      onEditEvent={(event) => {
+                        setEditingEvent(event);
+                        setEventModalOpen(true);
+                      }}
                     />
-                  )}
-                  <YearSection
-                    year={year}
-                    events={eventsByYear[year]}
-                    yearIndex={i}
-                    onEditEvent={(event) => {
-                      setEditingEvent(event);
-                      setEventModalOpen(true);
-                    }}
-                  />
-                </div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         </section>
       )}

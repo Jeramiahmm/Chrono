@@ -23,9 +23,10 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
         delay: index * 0.05,
         ease: [0.16, 1, 0.3, 1],
       }}
+      data-memory-card
       className={`relative group ${isLeft ? "md:pr-12" : "md:pl-12"}`}
     >
-      <div className="relative bg-chrono-card/40 overflow-hidden border border-white/[0.12] card-hover">
+      <div className="relative bg-chrono-card/40 overflow-hidden border border-white/[0.12] card-hover transition-all duration-300">
         {event.imageUrl && (
           <div className="relative h-52 md:h-60 overflow-hidden">
             <Image

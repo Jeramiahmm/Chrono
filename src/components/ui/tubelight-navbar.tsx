@@ -15,9 +15,10 @@ interface NavItem {
 interface NavBarProps {
   items: NavItem[]
   className?: string
+  extraActions?: React.ReactNode
 }
 
-export function NavBar({ items, className }: NavBarProps) {
+export function NavBar({ items, className, extraActions }: NavBarProps) {
   const [activeTab, setActiveTab] = useState(items[0].name)
 
   return (
@@ -67,6 +68,11 @@ export function NavBar({ items, className }: NavBarProps) {
             </Link>
           )
         })}
+        {extraActions && (
+          <div className="flex items-center gap-1 ml-1">
+            {extraActions}
+          </div>
+        )}
       </div>
     </div>
   )
