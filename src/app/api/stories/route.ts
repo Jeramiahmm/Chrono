@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { generateStory } from "@/lib/story-generator";
 
 // GET /api/stories — returns AI-generated stories with cursor-based pagination
 export async function GET(req: NextRequest) {
@@ -81,19 +82,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Fetch user's events for the period to generate content
+    const storyPeriod = period || (year ? `January – December ${year}` : "All Time");
+    const eventWhere: Record<string, unknown> = { userId: user.id, deletedAt: null };
+    if (year) {
+      const yearNum = Number(year);
+      eventWhere.date = {
+        gte: new Date(`${yearNum}-01-01`),
+        lt: new Date(`${yearNum + 1}-01-01`),
+      };
+    }
+
+    const events = await prisma.event.findMany({
+      where: eventWhere,
+      orderBy: { date: "asc" },
+    });
+
+    const eventSummaries = events.map((e) => ({
+      title: e.title,
+      date: e.date.toISOString().split("T")[0],
+      location: e.location,
+      category: e.category,
+      description: e.description,
+      hasPhoto: !!e.imageUrl,
+    }));
+
+    const defaultTitle = year ? `Your ${year}` : `Your ${period || "Life Story"}`;
+    const generated = await generateStory(eventSummaries, storyPeriod, defaultTitle);
+
+    const locations = [...new Set(events.map((e) => e.location).filter(Boolean))];
+    const photosCount = events.filter((e) => e.imageUrl).length;
+
     const story = await prisma.aIStory.create({
       data: {
         userId: user.id,
-        title: year ? `Your ${year}` : `Your ${period || "Life Story"}`,
-        period: period || (year ? `January – December ${year}` : "All Time"),
+        title: generated.title,
+        period: storyPeriod,
         year: year ? Number(year) : null,
-        summary: "This story will be generated based on your life events during this period.",
-        highlights: [
-          "Key moment that defined this period",
-          "Growth and personal development",
-          "Meaningful connections made",
-        ],
-        stats: { events: 0, cities: 0, photos: 0 },
+        summary: generated.summary,
+        highlights: generated.highlights,
+        stats: {
+          events: events.length,
+          cities: locations.length,
+          photos: photosCount,
+        },
       },
     });
 

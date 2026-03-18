@@ -61,8 +61,9 @@ describe("PUT /api/stories/[id]", () => {
     ]);
     mockPrisma.aIStory.update.mockResolvedValue({
       ...mockStory,
-      summary: "A chapter defined by 2 meaningful moments across Paris, NYC.",
-      highlights: ["Visited Paris", "Got Promoted"],
+      title: "Generated Title",
+      summary: "AI-generated story summary.",
+      highlights: ["Highlight 1", "Highlight 2", "Highlight 3"],
       stats: { events: 2, cities: 2, photos: 1 },
     });
 
@@ -71,7 +72,8 @@ describe("PUT /api/stories/[id]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.story.highlights).toContain("Visited Paris");
+    expect(data.story.summary).toBe("AI-generated story summary.");
+    expect(data.story.highlights).toContain("Highlight 1");
   });
 
   it("returns 404 for non-existent story", async () => {

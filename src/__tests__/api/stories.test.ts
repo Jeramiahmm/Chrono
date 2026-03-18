@@ -67,13 +67,14 @@ describe("POST /api/stories", () => {
   it("creates a story with year", async () => {
     vi.mocked(getServerSession).mockResolvedValue(mockSession);
     mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+    mockPrisma.event.findMany.mockResolvedValue([]);
     mockPrisma.aIStory.create.mockResolvedValue({
       id: "story-new",
-      title: "Your 2024",
+      title: "Generated Title",
       period: "January – December 2024",
       year: 2024,
-      summary: "This story will be generated based on your life events during this period.",
-      highlights: ["Key moment", "Growth", "Connections"],
+      summary: "AI-generated story summary.",
+      highlights: ["Highlight 1", "Highlight 2", "Highlight 3"],
       stats: { events: 0, cities: 0, photos: 0 },
     });
 
@@ -85,7 +86,7 @@ describe("POST /api/stories", () => {
     const data = await res.json();
 
     expect(res.status).toBe(201);
-    expect(data.story.title).toBe("Your 2024");
+    expect(data.story.title).toBe("Generated Title");
   });
 
   it("rejects invalid year", async () => {

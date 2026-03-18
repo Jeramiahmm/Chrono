@@ -39,6 +39,17 @@ vi.mock("@/lib/auth", () => ({
 // Mock env (no-op)
 vi.mock("@/lib/env", () => ({}));
 
+// Mock story generator
+vi.mock("@/lib/story-generator", () => ({
+  generateStory: vi.fn((_events: unknown[], _period: string, existingTitle?: string) =>
+    Promise.resolve({
+      title: existingTitle || "Generated Title",
+      summary: "AI-generated story summary.",
+      highlights: ["Highlight 1", "Highlight 2", "Highlight 3"],
+    })
+  ),
+}));
+
 // Shared mock Prisma client
 export const mockPrisma = {
   user: {
