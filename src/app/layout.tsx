@@ -10,6 +10,7 @@ import SessionProvider from "@/components/providers/SessionProvider";
 import AddMemoryButton from "@/components/ui/AddMemoryButton";
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,6 +63,7 @@ export default function RootLayout({
           </ThemeProvider>
         </SessionProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
