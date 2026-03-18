@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { AIStory } from "@/data/demo";
+import { useSession, signIn } from "next-auth/react";
+import { AIStory, demoStories, insightStats as demoInsightStats } from "@/data/demo";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
 import StatCard from "@/components/insights/StatCard";
 import CategoryChart from "@/components/insights/CategoryChart";
@@ -26,26 +27,45 @@ interface InsightStats {
 }
 
 export default function InsightsPage() {
+  const { data: session, status } = useSession();
   const [stories, setStories] = useState<AIStory[]>([]);
   const [stats, setStats] = useState<InsightStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isShowingDemo, setIsShowingDemo] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareStory, setShareStory] = useState<AIStory | null>(null);
   const [storyFilter, setStoryFilter] = useState<"all" | "year" | "chapter">("all");
 
   useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      setStories(demoStories);
+      setStats(demoInsightStats);
+      setIsShowingDemo(true);
+      setLoading(false);
+      return;
+    }
     Promise.all([
       fetch("/api/stories").then((r) => r.json()),
       fetch("/api/insights").then((r) => r.json()),
     ])
       .then(([storiesData, insightsData]) => {
-        setStories(storiesData.stories || []);
-        setStats(insightsData.stats || null);
+        const realStories = storiesData.stories || [];
+        const realStats = insightsData.stats || null;
+        if (!realStats) {
+          setStories(demoStories);
+          setStats(demoInsightStats);
+          setIsShowingDemo(true);
+        } else {
+          setStories(realStories);
+          setStats(realStats);
+          setIsShowingDemo(false);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [session, status]);
 
   const handleRegenerate = useCallback(async (storyId: string) => {
     setGenerating(true);
@@ -83,7 +103,7 @@ export default function InsightsPage() {
     );
   }
 
-  if (!stats) {
+  if (!stats && !isShowingDemo) {
     return (
       <div className="min-h-screen pt-24 pb-32">
         <section className="relative py-16 md:py-28 px-6 overflow-hidden">
@@ -112,6 +132,27 @@ export default function InsightsPage() {
 
   return (
     <div className="min-h-screen pt-24 pb-32">
+      {isShowingDemo && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="sticky top-16 z-40 backdrop-blur-xl bg-[var(--card-bg)]/80 border-b border-[var(--line-strong)] px-6 py-3"
+        >
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <p className="text-xs sm:text-sm font-body font-light text-chrono-muted">
+              Sample insights &mdash; your life data will generate real patterns
+            </p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/insights" })}
+              className="px-4 py-1.5 text-xs font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all whitespace-nowrap ml-4"
+            >
+              Start yours
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       <section className="relative py-16 md:py-28 px-6 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -132,16 +173,16 @@ export default function InsightsPage() {
         </motion.div>
       </section>
 
-      <section className="px-6 mb-28">
+      {stats && (<section className="px-6 mb-28">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-[var(--line)]">
           <StatCard label="Total Events" value={stats.totalEvents} delay={0} />
           <StatCard label="Photos captured" value={stats.totalPhotos} delay={0.1} />
           <StatCard label="Cities visited" value={stats.citiesVisited} delay={0.2} />
           <StatCard label="Most active year" value={stats.mostActiveYear.toString()} delay={0.3} />
         </div>
-      </section>
+      </section>)}
 
-      <section className="px-6 mb-28">
+      {stats && (<section className="px-6 mb-28">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -180,9 +221,9 @@ export default function InsightsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section>)}
 
-      <section className="px-6 mb-28">
+      {stats && (<section className="px-6 mb-28">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -202,7 +243,7 @@ export default function InsightsPage() {
           </div>
           <CityChart data={stats.cityVisits} />
         </div>
-      </section>
+      </section>)}
 
       {stories.length > 0 && (
         <section className="px-6">
@@ -251,43 +292,45 @@ export default function InsightsPage() {
                 <div key={story.id} className="relative">
                   <AIStorySummary story={story} index={i} />
 
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="flex items-center justify-end gap-2 mt-3 px-2"
-                  >
-                    <button
-                      onClick={() => handleRegenerate(story.id)}
-                      disabled={generating}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all disabled:opacity-40"
+                  {!isShowingDemo && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      className="flex items-center justify-end gap-2 mt-3 px-2"
                     >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
-                      </svg>
-                      Regenerate
-                    </button>
-                    <button
-                      onClick={() => handleShare(story)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
-                    >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                      </svg>
-                      Share
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(story.summary);
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
-                    >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-                      </svg>
-                      Copy
-                    </button>
-                  </motion.div>
+                      <button
+                        onClick={() => handleRegenerate(story.id)}
+                        disabled={generating}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all disabled:opacity-40"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                        </svg>
+                        Regenerate
+                      </button>
+                      <button
+                        onClick={() => handleShare(story)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                        </svg>
+                        Share
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(story.summary);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                        </svg>
+                        Copy
+                      </button>
+                    </motion.div>
+                  )}
                 </div>
               ))}
             </div>
@@ -295,7 +338,21 @@ export default function InsightsPage() {
         </section>
       )}
 
-      {shareStory && (
+      {isShowingDemo && (
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-20 mb-10">
+          <div className="inline-flex flex-col items-center gap-6">
+            <p className="text-lg font-display font-light italic text-chrono-muted">What will your life data reveal?</p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/insights" })}
+              className="px-8 py-3 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all duration-500"
+            >
+              Discover Your Insights
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {shareStory && !isShowingDemo && (
         <ShareCard
           isOpen={shareOpen}
           onClose={() => { setShareOpen(false); setShareStory(null); }}

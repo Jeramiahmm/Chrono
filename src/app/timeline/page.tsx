@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
-import { TimelineEvent, getEventsByYear } from "@/data/demo";
+import { useSession, signIn } from "next-auth/react";
+import { TimelineEvent, getEventsByYear, demoEvents } from "@/data/demo";
 import YearSection from "@/components/timeline/YearSection";
 import EventModal from "@/components/events/EventModal";
 import EmptyState from "@/components/ui/EmptyState";
@@ -60,26 +61,41 @@ function YearScrubber({ years, activeYear, onYearClick }: { years: string[]; act
 }
 
 export default function TimelinePage() {
+  const { data: session, status } = useSession();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isShowingDemo, setIsShowingDemo] = useState(false);
   const [activeYear, setActiveYear] = useState<string>("");
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | undefined>();
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
   const fetchEvents = useCallback(() => {
+    if (status === "loading") return;
+    if (!session) {
+      setEvents(demoEvents);
+      setIsShowingDemo(true);
+      setLoading(false);
+      return;
+    }
     fetch("/api/events")
       .then((res) => res.json())
       .then((data) => {
-        setEvents(data.events || []);
+        const real = data.events || [];
+        if (real.length === 0) {
+          setEvents(demoEvents);
+          setIsShowingDemo(true);
+        } else {
+          setEvents(real);
+          setIsShowingDemo(false);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [session, status]);
 
   useEffect(() => {
     fetchEvents();
-    // Listen for events created from the floating AddMemoryButton
     const handler = () => fetchEvents();
     window.addEventListener("chrono:event-created", handler);
     return () => window.removeEventListener("chrono:event-created", handler);
@@ -162,18 +178,41 @@ export default function TimelinePage() {
 
   return (
     <div className="min-h-screen pt-24 pb-32">
+      {isShowingDemo && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="sticky top-16 z-40 backdrop-blur-xl bg-[var(--card-bg)]/80 border-b border-[var(--line-strong)] px-6 py-3"
+        >
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <p className="text-xs sm:text-sm font-body font-light text-chrono-muted">
+              You&apos;re viewing a sample timeline &mdash; see what your life could look like
+            </p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/timeline" })}
+              className="px-4 py-1.5 text-xs font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all whitespace-nowrap ml-4"
+            >
+              Start yours
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       <section className="relative py-16 md:py-28 px-6 overflow-hidden">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }} className="relative max-w-4xl mx-auto text-center">
           <span className="section-label mb-5 block">Your Journey</span>
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight text-chrono-text"><em>Timeline</em></h1>
           <p className="text-base font-body font-light text-chrono-muted max-w-md mx-auto mb-12 leading-relaxed">Every moment that shaped your story, beautifully organized and brought to life.</p>
 
-          <div className="flex items-center justify-center gap-3 mb-10">
-            <button onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }} className="px-6 py-2.5 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all duration-500 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-              Add Event
-            </button>
-          </div>
+          {!isShowingDemo && (
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <button onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }} className="px-6 py-2.5 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all duration-500 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Add Event
+              </button>
+            </div>
+          )}
 
           <CategoryFilterBar selected={selectedCategories} onToggle={handleToggleCategory} />
         </motion.div>
@@ -207,7 +246,7 @@ export default function TimelinePage() {
         <div className="text-center py-32">
           <p className="text-sm font-body font-extralight text-chrono-muted italic">No memories in the selected categories.</p>
         </div>
-      ) : events.length === 0 ? (
+      ) : events.length === 0 && !isShowingDemo ? (
         <EmptyState icon="timeline" title="Your story starts here" description="Add your first life event to begin building your personal timeline. Every moment matters." actionLabel="Create First Event" onAction={() => setEventModalOpen(true)} />
       ) : (
         <section className="px-6">
@@ -215,7 +254,7 @@ export default function TimelinePage() {
             <AnimatePresence mode="sync">
               {years.map((year, i) => (
                   <motion.div key={year} data-year={year} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }}>
-                    <YearSection year={year} events={eventsByYear[year]} yearIndex={i} onEditEvent={(event) => { setEditingEvent(event); setEventModalOpen(true); }} />
+                    <YearSection year={year} events={eventsByYear[year]} yearIndex={i} onEditEvent={isShowingDemo ? undefined : (event) => { setEditingEvent(event); setEventModalOpen(true); }} />
                   </motion.div>
               ))}
             </AnimatePresence>
@@ -223,13 +262,28 @@ export default function TimelinePage() {
         </section>
       )}
 
-      {events.length > 0 && (
+      {events.length > 0 && !isShowingDemo && (
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-40">
           <div className="inline-flex flex-col items-center gap-4">
             <div className="w-2 h-2 rounded-full bg-chrono-muted" />
             <p className="text-sm font-display font-light italic text-chrono-muted">Your story continues...</p>
             <button onClick={() => { setEditingEvent(undefined); setEventModalOpen(true); }} className="mt-2 px-5 py-2 text-xs font-body font-light text-chrono-muted border border-[var(--line-strong)] hover:border-[var(--line-hover)] hover:text-chrono-text rounded-full transition-all duration-500">
               Add Next Moment
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {isShowingDemo && (
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-40 mb-10">
+          <div className="inline-flex flex-col items-center gap-6">
+            <div className="w-2 h-2 rounded-full bg-chrono-muted" />
+            <p className="text-lg font-display font-light italic text-chrono-muted">This could be your story.</p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/timeline" })}
+              className="px-8 py-3 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all duration-500"
+            >
+              Start Your Timeline
             </button>
           </div>
         </motion.div>
