@@ -121,6 +121,13 @@ export default function EventMap({ events }: EventMapProps) {
         }).addTo(map);
       }
 
+      // Auto-fit map to event bounds
+      if (eventsWithCoords.length > 0) {
+        const latlngs = eventsWithCoords.map((e) => [e.latitude!, e.longitude!]);
+        const bounds = L.latLngBounds(latlngs);
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+      }
+
       leafletMap.current = map;
       setMapLoaded(true);
     };

@@ -351,20 +351,12 @@ export default function Navigation() {
                   </button>
                 </>
               ) : (
-                <>
-                  <button
-                    onClick={() => { setMobileOpen(false); signIn("google"); }}
-                    className="w-full py-3 text-sm font-body font-light text-chrono-muted border border-[var(--line-strong)] rounded-full"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => { setMobileOpen(false); signIn("google"); }}
-                    className="w-full py-3 text-sm font-body font-light bg-foreground text-background rounded-full"
-                  >
-                    Get Started
-                  </button>
-                </>
+                <button
+                  onClick={() => { setMobileOpen(false); signIn("google", { callbackUrl: "/timeline" }); }}
+                  className="w-full py-3 text-sm font-body font-light bg-foreground text-background rounded-full"
+                >
+                  Get Started
+                </button>
               )}
             </div>
           </motion.div>

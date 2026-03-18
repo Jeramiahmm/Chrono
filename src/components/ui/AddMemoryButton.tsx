@@ -3,10 +3,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import ShimmerButton from "./shimmer-button";
 import { CATEGORIES } from "@/lib/constants";
 
 export default function AddMemoryButton() {
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -135,6 +137,8 @@ export default function AddMemoryButton() {
       setImageFile(file);
     }
   }, [form.imageUrl]);
+
+  if (!session) return null;
 
   return (
     <>
