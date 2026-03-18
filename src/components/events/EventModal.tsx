@@ -3,14 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { TimelineEvent } from "@/data/demo";
-
-const categories = [
-  { value: "travel", label: "Travel" },
-  { value: "career", label: "Career" },
-  { value: "achievement", label: "Achievement" },
-  { value: "education", label: "Education" },
-  { value: "life", label: "Life" },
-];
+import { CATEGORIES } from "@/lib/constants";
 
 const chapters = [
   "College Years",
@@ -122,25 +115,50 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
     setSaving(false);
   }, [form, event, validate, onSave, onClose, imageFile]);
 
+  // Revoke blob URLs on cleanup to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
+    };
+  }, [form.imageUrl]);
+
+  // Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   return (
     <AnimatePresence>
@@ -298,7 +316,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               <div>
                 <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Category</label>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
+                  {CATEGORIES.map((cat) => (
                     <button
                       key={cat.value}
                       onClick={() => setForm((f) => ({ ...f, category: f.category === cat.value ? "" : cat.value }))}

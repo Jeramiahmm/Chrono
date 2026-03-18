@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import ShimmerButton from "./shimmer-button";
-
-const categories = [
-  { value: "travel", label: "Travel" },
-  { value: "achievement", label: "Achievement" },
-  { value: "education", label: "Education" },
-  { value: "life", label: "Life" },
-  { value: "career", label: "Career" },
-];
+import { CATEGORIES } from "@/lib/constants";
 
 export default function AddMemoryButton() {
   const [open, setOpen] = useState(false);
@@ -98,25 +91,50 @@ export default function AddMemoryButton() {
     }
   };
 
+  // Revoke blob URLs on cleanup to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
+    };
+  }, [form.imageUrl]);
+
+  // Escape key to close modal
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   return (
     <>
@@ -219,7 +237,7 @@ export default function AddMemoryButton() {
                 <div>
                   <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Category</label>
                   <div className="flex flex-wrap gap-2">
-                    {categories.map((cat) => (
+                    {CATEGORIES.map((cat) => (
                       <button
                         key={cat.value}
                         onClick={() => setForm((f) => ({ ...f, category: f.category === cat.value ? "" : cat.value }))}

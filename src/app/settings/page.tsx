@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { toast } from "sonner";
 import GoogleConnectModal from "@/components/ui/GoogleConnectModal";
 
 export default function SettingsPage() {
@@ -28,6 +29,8 @@ export default function SettingsPage() {
   useEffect(() => {
     const stored = localStorage.getItem("chrono-connected-accounts");
     if (stored) setConnectedAccounts(JSON.parse(stored));
+    const notifPref = localStorage.getItem("chrono-notifications");
+    if (notifPref) setNotifications(notifPref === "true");
   }, []);
 
   const handleConnect = (service: string) => {
@@ -42,6 +45,13 @@ export default function SettingsPage() {
     localStorage.setItem("chrono-connected-accounts", JSON.stringify(updated));
   };
 
+  const handleToggleNotifications = () => {
+    const next = !notifications;
+    setNotifications(next);
+    localStorage.setItem("chrono-notifications", String(next));
+    toast.success(next ? "Notifications enabled" : "Notifications disabled");
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -52,13 +62,14 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         setSaved(true);
+        toast.success("Changes saved");
         setTimeout(() => setSaved(false), 2000);
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to save changes.");
+        toast.error(data.error || "Failed to save changes.");
       }
     } catch {
-      alert("Failed to save changes. Please try again.");
+      toast.error("Failed to save changes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -67,6 +78,7 @@ export default function SettingsPage() {
   const handleClearOnboarding = () => {
     localStorage.removeItem("chrono-onboarding-complete");
     localStorage.removeItem("chrono-start-mode");
+    toast.success("Onboarding reset");
   };
 
   const handleExportData = async () => {
@@ -89,8 +101,9 @@ export default function SettingsPage() {
       a.download = `crohna-export-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success("Data exported successfully");
     } catch {
-      alert("Failed to export data. Please try again.");
+      toast.error("Failed to export data. Please try again.");
     }
   };
 
@@ -106,12 +119,12 @@ export default function SettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setDeleteConfirm(false);
-        alert(`Deleted ${data.deleted} events.`);
+        toast.success(`Deleted ${data.deleted} events.`);
       } else {
-        alert("Failed to delete events.");
+        toast.error("Failed to delete events.");
       }
     } catch {
-      alert("Failed to delete events. Please try again.");
+      toast.error("Failed to delete events. Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -146,7 +159,7 @@ export default function SettingsPage() {
             <h3 className="text-sm font-display font-light text-chrono-text mb-4">Profile</h3>
             <div className="flex items-center gap-4 mb-6">
               {session?.user?.image ? (
-                <Image src={session.user.image} alt="" width={64} height={64} className="w-16 h-16 rounded-full border border-[var(--line-strong)]" />
+                <Image src={session.user.image} alt={session.user.name || "Profile"} width={64} height={64} className="w-16 h-16 rounded-full border border-[var(--line-strong)]" />
               ) : (
                 <div className="w-16 h-16 border border-[var(--line-strong)] flex items-center justify-center text-chrono-accent text-xl font-display font-light rounded-full">
                   {userInitial}
@@ -195,7 +208,10 @@ export default function SettingsPage() {
                   <div className="text-xs font-body font-light text-chrono-muted">Get notified when new stories are ready</div>
                 </div>
                 <button
-                  onClick={() => setNotifications(!notifications)}
+                  onClick={handleToggleNotifications}
+                  role="switch"
+                  aria-checked={notifications}
+                  aria-label="Toggle story notifications"
                   className={`relative w-11 h-6 rounded-full transition-colors ${
                     notifications ? "bg-chrono-accent" : "bg-[var(--line-strong)]"
                   }`}

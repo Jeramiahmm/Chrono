@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
-type ConnectState = "idle" | "loading" | "success";
+type ConnectState = "idle" | "loading" | "success" | "error";
 
 interface GoogleConnectModalProps {
   isOpen: boolean;
@@ -23,30 +24,69 @@ export default function GoogleConnectModal({
   isConnected,
 }: GoogleConnectModalProps) {
   const [state, setState] = useState<ConnectState>(isConnected ? "success" : "idle");
+  const [importCount, setImportCount] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setState(isConnected ? "success" : "idle");
+      setImportCount(null);
+      setErrorMessage("");
     }
   }, [isOpen, isConnected]);
 
-  const handleConnect = () => {
+  // Escape key to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const handleConnect = async () => {
     setState("loading");
-    setTimeout(() => {
+    setErrorMessage("");
+
+    const endpoint = service === "Google Calendar"
+      ? "/api/google/calendar"
+      : "/api/google/photos";
+
+    try {
+      const res = await fetch(endpoint, { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setState("error");
+        setErrorMessage(data.error || "Connection failed. Please try again.");
+        toast.error(data.error || "Connection failed");
+        return;
+      }
+
+      setImportCount(data.imported || 0);
       setState("success");
       onConnect();
-    }, 2000);
+      toast.success(`Imported ${data.imported || 0} items from ${service}`);
+    } catch {
+      setState("error");
+      setErrorMessage("Connection failed. Please check your internet and try again.");
+      toast.error("Connection failed");
+    }
   };
 
   const handleDisconnect = () => {
     onDisconnect();
     setState("idle");
+    setImportCount(null);
+    toast.success(`${service} disconnected`);
   };
 
-  const successMessage =
-    service === "Google Photos"
-      ? "Connected — 1,842 photos found"
-      : "Connected — calendar imported";
+  const successMessage = importCount !== null
+    ? `Connected — ${importCount} ${service === "Google Photos" ? "photos" : "events"} imported`
+    : service === "Google Photos"
+      ? "Connected — photos synced"
+      : "Connected — calendar synced";
 
   return (
     <AnimatePresence>
@@ -96,7 +136,9 @@ export default function GoogleConnectModal({
                       </svg>
                     </div>
                     <p className="text-sm font-body font-light text-chrono-muted mb-6 max-w-xs mx-auto">
-                      Connect your Google account to import memories automatically
+                      {service === "Google Photos"
+                        ? "Import your recent photos as timeline events automatically"
+                        : "Import your calendar events into your life timeline"}
                     </p>
                     <button
                       onClick={handleConnect}
@@ -117,7 +159,12 @@ export default function GoogleConnectModal({
                   >
                     <div className="w-10 h-10 mx-auto mb-5 border-2 border-chrono-muted/30 border-t-chrono-text rounded-full animate-spin" />
                     <p className="text-sm font-body font-light text-chrono-text">
-                      Connecting to Google...
+                      {service === "Google Photos"
+                        ? "Importing your photos..."
+                        : "Importing calendar events..."}
+                    </p>
+                    <p className="text-xs font-body font-light text-chrono-muted mt-2">
+                      This may take a moment
                     </p>
                   </motion.div>
                 )}
@@ -135,14 +182,53 @@ export default function GoogleConnectModal({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className="text-sm font-body font-light text-chrono-text mb-6">
+                    <p className="text-sm font-body font-light text-chrono-text mb-2">
                       {successMessage}
                     </p>
+                    <p className="text-xs font-body font-light text-chrono-muted mb-6">
+                      Events are now in your timeline
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      <button
+                        onClick={handleConnect}
+                        className="px-5 py-2 text-xs font-body font-light border border-[var(--line-strong)] text-chrono-muted hover:text-chrono-text hover:border-[var(--line-hover)] rounded-full transition-all"
+                      >
+                        Sync again
+                      </button>
+                      <button
+                        onClick={handleDisconnect}
+                        className="px-5 py-2 text-xs font-body font-light text-red-400/70 hover:text-red-400 border border-red-400/20 hover:border-red-400/40 rounded-full transition-all"
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {state === "error" && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-6"
+                  >
+                    <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-red-500/10 flex items-center justify-center">
+                      <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-body font-light text-chrono-text mb-2">
+                      Connection failed
+                    </p>
+                    <p className="text-xs font-body font-light text-chrono-muted mb-6 max-w-xs mx-auto">
+                      {errorMessage}
+                    </p>
                     <button
-                      onClick={handleDisconnect}
-                      className="px-6 py-2 text-xs font-body font-light text-red-400/70 hover:text-red-400 border border-red-400/20 hover:border-red-400/40 rounded-full transition-all"
+                      onClick={handleConnect}
+                      className="px-8 py-3 text-sm font-body font-medium bg-foreground text-background rounded-full hover:opacity-90 transition-opacity"
                     >
-                      Disconnect
+                      Try again
                     </button>
                   </motion.div>
                 )}

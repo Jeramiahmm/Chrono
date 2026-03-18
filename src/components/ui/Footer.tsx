@@ -4,7 +4,6 @@ import Link from "next/link";
 
 const productLinks = [
   { label: "Timeline", href: "/timeline" },
-  { label: "Stories", href: "/insights" },
   { label: "Map", href: "/map" },
   { label: "Insights", href: "/insights" },
 ];

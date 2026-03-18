@@ -67,41 +67,8 @@ function SearchButton() {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const applySearch = useCallback((q: string) => {
-    const cards = document.querySelectorAll("[data-memory-card]");
-    if (!q.trim()) {
-      cards.forEach((card) => {
-        const el = card as HTMLElement;
-        el.style.opacity = "1";
-        el.style.transform = "";
-        el.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-        const inner = el.querySelector(".card-hover") as HTMLElement;
-        if (inner) inner.style.borderColor = "";
-      });
-      return;
-    }
-    const lower = q.toLowerCase();
-    cards.forEach((card) => {
-      const el = card as HTMLElement;
-      const title = el.getAttribute("data-title") || "";
-      const desc = el.getAttribute("data-description") || "";
-      const loc = el.getAttribute("data-location") || "";
-      const cat = el.getAttribute("data-category") || "";
-      const searchable = `${title} ${desc} ${loc} ${cat}`.toLowerCase();
-      el.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-
-      if (searchable.includes(lower)) {
-        el.style.opacity = "1";
-        el.style.transform = "scale(1)";
-        const inner = el.querySelector(".card-hover") as HTMLElement;
-        if (inner) inner.style.borderColor = "var(--chrono-accent)";
-      } else {
-        el.style.opacity = "0.2";
-        el.style.transform = "scale(0.97)";
-        const inner = el.querySelector(".card-hover") as HTMLElement;
-        if (inner) inner.style.borderColor = "";
-      }
-    });
+  const dispatchSearch = useCallback((q: string) => {
+    window.dispatchEvent(new CustomEvent("chrono:search", { detail: { query: q } }));
   }, []);
 
   useEffect(() => {
@@ -115,14 +82,14 @@ function SearchButton() {
       if (!target.closest("[data-search-bar]")) {
         setOpen(false);
         setQuery("");
-        applySearch("");
+        dispatchSearch("");
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
         setQuery("");
-        applySearch("");
+        dispatchSearch("");
       }
     };
     window.addEventListener("keydown", handleEsc);
@@ -131,14 +98,14 @@ function SearchButton() {
       window.removeEventListener("keydown", handleEsc);
       window.removeEventListener("click", handleClickOutside, { capture: true });
     };
-  }, [open, applySearch]);
+  }, [open, dispatchSearch]);
 
   return (
     <>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="w-8 h-8 rounded-full flex items-center justify-center text-chrono-muted hover:text-chrono-text transition-colors"
-        aria-label="Search"
+        aria-label="Search memories"
         data-search-bar
       >
         <Search size={16} strokeWidth={2} />
@@ -163,7 +130,7 @@ function SearchButton() {
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value);
-                    applySearch(e.target.value);
+                    dispatchSearch(e.target.value);
                   }}
                   placeholder="Search memories..."
                   className="flex-1 bg-transparent text-sm text-chrono-text placeholder:text-chrono-muted outline-none font-body font-light"
@@ -172,7 +139,7 @@ function SearchButton() {
                   onClick={() => {
                     setOpen(false);
                     setQuery("");
-                    applySearch("");
+                    dispatchSearch("");
                   }}
                   className="text-chrono-muted hover:text-chrono-text transition-colors"
                 >
@@ -221,7 +188,7 @@ function UserMenu() {
         className="w-8 h-8 rounded-full overflow-hidden border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-colors"
       >
         {session.user.image ? (
-          <Image src={session.user.image} alt="" width={32} height={32} className="w-full h-full object-cover" />
+          <Image src={session.user.image} alt={session.user.name || "Profile"} width={32} height={32} className="w-full h-full object-cover" />
         ) : (
           <span className="w-full h-full flex items-center justify-center text-xs font-body text-chrono-muted">
             {session.user.name?.[0] || session.user.email?.[0]?.toUpperCase() || "U"}
@@ -365,7 +332,7 @@ export default function Navigation() {
                 <>
                   <div className="flex items-center gap-3 mb-2">
                     {session.user.image ? (
-                      <Image src={session.user.image} alt="" width={40} height={40} className="w-10 h-10 rounded-full" />
+                      <Image src={session.user.image} alt={session.user.name || "Profile"} width={40} height={40} className="w-10 h-10 rounded-full" />
                     ) : (
                       <div className="w-10 h-10 rounded-full border border-[var(--line-strong)] flex items-center justify-center text-chrono-muted">
                         {session.user.name?.[0] || "U"}

@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
@@ -15,7 +13,7 @@ function createPrismaClient() {
   }
 
   const adapter = new PrismaNeon({ connectionString });
-  return new PrismaClient({ adapter });
+  return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 }
 
 export function getPrisma() {

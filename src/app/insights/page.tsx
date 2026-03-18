@@ -67,6 +67,17 @@ export default function InsightsPage() {
       .catch(() => setLoading(false));
   }, [session, status]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const searchHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSearchQuery(detail?.query || "");
+    };
+    window.addEventListener("chrono:search", searchHandler);
+    return () => window.removeEventListener("chrono:search", searchHandler);
+  }, []);
+
   const handleRegenerate = useCallback(async (storyId: string) => {
     setGenerating(true);
     try {
@@ -93,6 +104,10 @@ export default function InsightsPage() {
     if (storyFilter === "year") return s.year !== undefined;
     if (storyFilter === "chapter") return !s.year;
     return true;
+  }).filter((s) => {
+    if (!searchQuery) return true;
+    const searchable = `${s.title} ${s.summary} ${s.period}`.toLowerCase();
+    return searchable.includes(searchQuery.toLowerCase());
   });
 
   if (loading) {

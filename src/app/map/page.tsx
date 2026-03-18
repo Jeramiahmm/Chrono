@@ -37,6 +37,17 @@ export default function MapPage() {
       .catch(() => setLoading(false));
   }, [session, status]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const searchHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSearchQuery(detail?.query || "");
+    };
+    window.addEventListener("chrono:search", searchHandler);
+    return () => window.removeEventListener("chrono:search", searchHandler);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen pt-24 pb-32 flex items-center justify-center">
@@ -45,7 +56,13 @@ export default function MapPage() {
     );
   }
 
-  const eventsWithLocation = events.filter((e) => e.location);
+  const displayEvents = searchQuery
+    ? events.filter((e) => {
+        const searchable = `${e.title} ${e.description || ""} ${e.location || ""} ${e.category || ""}`.toLowerCase();
+        return searchable.includes(searchQuery.toLowerCase());
+      })
+    : events;
+  const eventsWithLocation = displayEvents.filter((e) => e.location);
 
   return (
     <div className="min-h-screen pt-24 pb-32">
@@ -90,7 +107,7 @@ export default function MapPage() {
         </motion.div>
       </section>
 
-      {events.length === 0 && !isShowingDemo ? (
+      {displayEvents.length === 0 && !isShowingDemo ? (
         <EmptyState
           icon="timeline"
           title="No locations yet"
@@ -107,7 +124,7 @@ export default function MapPage() {
               transition={{ delay: 0.3, duration: 1.2 }}
               className="max-w-7xl mx-auto"
             >
-              <EventMap events={events} />
+              <EventMap events={displayEvents} />
             </motion.div>
           </section>
 

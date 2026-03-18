@@ -94,11 +94,21 @@ export default function TimelinePage() {
       .catch(() => setLoading(false));
   }, [session, status]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     fetchEvents();
     const handler = () => fetchEvents();
     window.addEventListener("chrono:event-created", handler);
-    return () => window.removeEventListener("chrono:event-created", handler);
+    const searchHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSearchQuery(detail?.query || "");
+    };
+    window.addEventListener("chrono:search", searchHandler);
+    return () => {
+      window.removeEventListener("chrono:event-created", handler);
+      window.removeEventListener("chrono:search", searchHandler);
+    };
   }, [fetchEvents]);
 
   const handleToggleCategory = useCallback((cat: string) => {
@@ -111,7 +121,13 @@ export default function TimelinePage() {
     });
   }, []);
 
-  const filteredEvents = selectedCategories.size === 0 ? events : events.filter((e) => e.category && selectedCategories.has(e.category));
+  const categoryFiltered = selectedCategories.size === 0 ? events : events.filter((e) => e.category && selectedCategories.has(e.category));
+  const filteredEvents = searchQuery
+    ? categoryFiltered.filter((e) => {
+        const searchable = `${e.title} ${e.description || ""} ${e.location || ""} ${e.category || ""}`.toLowerCase();
+        return searchable.includes(searchQuery.toLowerCase());
+      })
+    : categoryFiltered;
   const eventsByYear = getEventsByYear(filteredEvents);
   const allYears = Object.keys(getEventsByYear(events));
   const years = Object.keys(eventsByYear);

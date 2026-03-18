@@ -23,11 +23,6 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
         delay: index * 0.05,
         ease: [0.16, 1, 0.3, 1],
       }}
-      data-memory-card
-      data-title={event.title}
-      data-description={event.description || ""}
-      data-location={event.location || ""}
-      data-category={event.category || ""}
       className={`relative group ${isLeft ? "md:pr-12" : "md:pl-12"}`}
     >
       <div className="relative bg-[var(--card-bg)] overflow-hidden border border-[var(--line-strong)] card-hover transition-all duration-300">

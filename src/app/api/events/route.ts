@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { VALID_CATEGORIES } from "@/lib/constants";
 
 function formatEvent(e: {
   id: string;
@@ -119,7 +120,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Description must be under 5000 characters" }, { status: 400 });
     }
 
-    const VALID_CATEGORIES = ["travel", "achievement", "education", "life", "career"];
     const cat = category && VALID_CATEGORIES.includes(category.toLowerCase()) ? category.toLowerCase() : "life";
 
     const event = await prisma.event.create({

@@ -8,6 +8,7 @@ import ScrollProgressBar from "@/components/ui/ScrollProgressBar";
 import ThemeProvider from "@/components/ui/ThemeProvider";
 import SessionProvider from "@/components/providers/SessionProvider";
 import AddMemoryButton from "@/components/ui/AddMemoryButton";
+import { ToasterProvider } from "@/components/providers/ToasterProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,10 +23,21 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Crohna \u2014 Your Life, Beautifully Mapped",
+  title: "Crohna — Your Life, Beautifully Mapped",
   description:
     "Crohna transforms your memories into a stunning visual timeline. A premium digital life story.",
   keywords: ["timeline", "life events", "memories", "digital story"],
+  openGraph: {
+    title: "Crohna — Your Life, Beautifully Mapped",
+    description: "Transform your memories into a stunning visual timeline. A premium digital life story.",
+    type: "website",
+    siteName: "Crohna",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Crohna — Your Life, Beautifully Mapped",
+    description: "Transform your memories into a stunning visual timeline. A premium digital life story.",
+  },
 };
 
 export default function RootLayout({
@@ -45,6 +57,7 @@ export default function RootLayout({
               <AddMemoryButton />
               <Footer />
             </ErrorBoundary>
+            <ToasterProvider />
           </ThemeProvider>
         </SessionProvider>
       </body>
