@@ -3,14 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { TimelineEvent } from "@/data/demo";
-
-const categories = [
-  { value: "travel", label: "Travel" },
-  { value: "career", label: "Career" },
-  { value: "achievement", label: "Achievement" },
-  { value: "education", label: "Education" },
-  { value: "life", label: "Life" },
-];
+import { CATEGORIES } from "@/lib/constants";
 
 const chapters = [
   "College Years",
@@ -122,25 +115,50 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
     setSaving(false);
   }, [form, event, validate, onSave, onClose, imageFile]);
 
+  // Revoke blob URLs on cleanup to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
+    };
+  }, [form.imageUrl]);
+
+  // Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (form.imageUrl && form.imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(form.imageUrl);
+      }
       const url = URL.createObjectURL(file);
       setForm((f) => ({ ...f, imageUrl: url }));
       setImageFile(file);
     }
-  }, []);
+  }, [form.imageUrl]);
 
   return (
     <AnimatePresence>
@@ -197,6 +215,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               </div>
               <button
                 onClick={onClose}
+                aria-label="Close modal"
                 className="w-8 h-8 rounded-full bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text hover:bg-[var(--muted)] transition-all"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -247,14 +266,17 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                 </label>
                 <input
                   type="text"
+                  autoFocus
                   value={form.title}
                   onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); setErrors((er) => ({ ...er, title: "" })); }}
                   placeholder="What happened?"
+                  aria-invalid={!!errors.title}
+                  aria-describedby={errors.title ? "title-error" : undefined}
                   className={`w-full bg-[var(--input-bg)] px-4 py-3 text-sm text-chrono-text placeholder:text-chrono-muted/50 border transition-colors outline-none focus:border-[var(--line-hover)] ${
                     errors.title ? "border-red-500/40" : "border-[var(--line-strong)]"
                   }`}
                 />
-                {errors.title && <p className="text-xs text-red-400/70 mt-1">{errors.title}</p>}
+                {errors.title && <p id="title-error" className="text-xs text-red-400/70 mt-1" role="alert">{errors.title}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -266,11 +288,13 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                     type="date"
                     value={form.date}
                     onChange={(e) => { setForm((f) => ({ ...f, date: e.target.value })); setErrors((er) => ({ ...er, date: "" })); }}
+                    aria-invalid={!!errors.date}
+                    aria-describedby={errors.date ? "date-error" : undefined}
                     className={`w-full bg-[var(--input-bg)] px-4 py-3 text-sm text-chrono-text border transition-colors outline-none focus:border-[var(--line-hover)] ${
                       errors.date ? "border-red-500/40" : "border-[var(--line-strong)]"
                     }`}
                   />
-                  {errors.date && <p className="text-xs text-red-400/70 mt-1">{errors.date}</p>}
+                  {errors.date && <p id="date-error" className="text-xs text-red-400/70 mt-1" role="alert">{errors.date}</p>}
                 </div>
                 <div>
                   <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Location</label>
@@ -298,7 +322,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               <div>
                 <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Category</label>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
+                  {CATEGORIES.map((cat) => (
                     <button
                       key={cat.value}
                       onClick={() => setForm((f) => ({ ...f, category: f.category === cat.value ? "" : cat.value }))}

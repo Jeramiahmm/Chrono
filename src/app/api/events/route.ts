@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { VALID_CATEGORIES } from "@/lib/constants";
 
 function formatEvent(e: {
   id: string;
@@ -65,6 +66,7 @@ export async function GET(req: NextRequest) {
     const dbEvents = await prisma.event.findMany({
       where,
       orderBy: { date: "desc" },
+      take: 500,
     });
 
     const events = dbEvents.map(formatEvent);
@@ -119,7 +121,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Description must be under 5000 characters" }, { status: 400 });
     }
 
-    const VALID_CATEGORIES = ["travel", "achievement", "education", "life", "career"];
+    if (imageUrl && typeof imageUrl === "string") {
+      try {
+        const parsed = new URL(imageUrl);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
+      }
+    }
+
     const cat = category && VALID_CATEGORIES.includes(category.toLowerCase()) ? category.toLowerCase() : "life";
 
     const event = await prisma.event.create({

@@ -23,11 +23,6 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
         delay: index * 0.05,
         ease: [0.16, 1, 0.3, 1],
       }}
-      data-memory-card
-      data-title={event.title}
-      data-description={event.description || ""}
-      data-location={event.location || ""}
-      data-category={event.category || ""}
       className={`relative group ${isLeft ? "md:pr-12" : "md:pl-12"}`}
     >
       <div className="relative bg-[var(--card-bg)] overflow-hidden border border-[var(--line-strong)] card-hover transition-all duration-300">
@@ -53,6 +48,7 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
 
             {onEdit && (
               <button
+                type="button"
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
                 className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white/50 hover:text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-all"
               >
@@ -74,6 +70,7 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
 
         {!event.imageUrl && onEdit && (
           <button
+            type="button"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text opacity-0 group-hover:opacity-100 transition-all z-10"
           >

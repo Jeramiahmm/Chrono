@@ -68,6 +68,8 @@ model Event {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, date])
+  @@index([userId, category])
+  @@index([userId, source])
 }
 
 model AIStory {
@@ -85,6 +87,7 @@ model AIStory {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, year])
 }
 
 model VerificationToken {

@@ -3,12 +3,11 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { demoEvents, demoStories, getEventsByYear, TimelineEvent, AIStory } from "@/data/demo";
 import TimelineCard from "@/components/timeline/TimelineCard";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
-import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ParticleField from "@/components/three/ParticleField";
 import MarqueeTicker from "@/components/ui/MarqueeTicker";
 import LoadingScreen from "@/components/ui/LoadingScreen";
@@ -80,7 +79,17 @@ function AnimatedWord() {
   );
 }
 
+function useGetStarted() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  return useCallback(() => {
+    if (session) router.push("/timeline");
+    else signIn("google", { callbackUrl: "/timeline" });
+  }, [session, router]);
+}
+
 function HeroSection() {
+  const handleGetStarted = useGetStarted();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -143,11 +152,9 @@ function HeroSection() {
           transition={{ delay: 1.1, duration: 1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link href="/timeline">
-            <ShimmerButton>
-              Get Started
-            </ShimmerButton>
-          </Link>
+          <ShimmerButton onClick={handleGetStarted}>
+            Get Started
+          </ShimmerButton>
           <Link href="/insights">
             <button className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-full transition-all duration-500 text-sm font-body font-light tracking-wide">
               View Insights
@@ -772,6 +779,7 @@ function TestimonialsSection() {
 }
 
 function CTASection() {
+  const handleGetStarted = useGetStarted();
   return (
     <section className="relative py-[80px] md:py-[160px] px-6">
       <FadeUp className="relative max-w-3xl mx-auto text-center">
@@ -785,11 +793,9 @@ function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/timeline">
-            <ShimmerButton className="px-12 py-4 text-base">
-              Get Started
-            </ShimmerButton>
-          </Link>
+          <ShimmerButton className="px-12 py-4 text-base" onClick={handleGetStarted}>
+            Get Started
+          </ShimmerButton>
           <Link href="/insights">
             <button className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-full transition-all duration-500 text-sm font-body font-light">
               See a Demo
@@ -816,28 +822,6 @@ function CTASection() {
 }
 
 export default function Home() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const completed = localStorage.getItem("chrono-onboarding-complete");
-    if (!completed) {
-      setShowOnboarding(true);
-    }
-  }, []);
-
-  const handleOnboardingComplete = (choice: "demo" | "manual" | "import") => {
-    localStorage.setItem("chrono-onboarding-complete", "true");
-    localStorage.setItem("chrono-start-mode", choice);
-    setShowOnboarding(false);
-
-    if (choice === "demo" || choice === "manual") {
-      router.push("/timeline");
-    } else if (choice === "import") {
-      router.push("/settings");
-    }
-  };
-
   const { data: session } = useSession();
   const [userEvents, setUserEvents] = useState<TimelineEvent[]>([]);
   const [userStories, setUserStories] = useState<AIStory[]>([]);
@@ -845,8 +829,8 @@ export default function Home() {
   useEffect(() => {
     if (!session?.user) return;
     Promise.all([
-      fetch("/api/events").then((r) => r.json()),
-      fetch("/api/stories").then((r) => r.json()),
+      fetch("/api/events").then((r) => r.ok ? r.json() : { events: [] }),
+      fetch("/api/stories").then((r) => r.ok ? r.json() : { stories: [] }),
     ])
       .then(([eventsData, storiesData]) => {
         setUserEvents(eventsData.events || []);
@@ -858,12 +842,6 @@ export default function Home() {
   return (
     <>
       <LoadingScreen />
-
-      <AnimatePresence>
-        {showOnboarding && (
-          <OnboardingWizard onComplete={handleOnboardingComplete} />
-        )}
-      </AnimatePresence>
 
       <HeroSection />
       <OnThisDayWidget events={userEvents} />

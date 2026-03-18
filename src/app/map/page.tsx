@@ -2,22 +2,57 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { TimelineEvent } from "@/data/demo";
+import { useSession, signIn } from "next-auth/react";
+import { TimelineEvent, demoEvents } from "@/data/demo";
 import EventMap from "@/components/map/EventMap";
 import EmptyState from "@/components/ui/EmptyState";
 
 export default function MapPage() {
+  const { data: session, status } = useSession();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isShowingDemo, setIsShowingDemo] = useState(false);
 
   useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      setEvents(demoEvents);
+      setIsShowingDemo(true);
+      setLoading(false);
+      return;
+    }
     fetch("/api/events")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
-        setEvents(data.events || []);
+        const real = data.events || [];
+        if (real.length === 0) {
+          setEvents(demoEvents);
+          setIsShowingDemo(true);
+        } else {
+          setEvents(real);
+          setIsShowingDemo(false);
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setEvents(demoEvents);
+        setIsShowingDemo(true);
+        setLoading(false);
+      });
+  }, [session, status]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const searchHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSearchQuery(detail?.query || "");
+    };
+    window.addEventListener("chrono:search", searchHandler);
+    return () => window.removeEventListener("chrono:search", searchHandler);
   }, []);
 
   if (loading) {
@@ -28,11 +63,38 @@ export default function MapPage() {
     );
   }
 
-  const eventsWithLocation = events.filter((e) => e.location);
+  const displayEvents = searchQuery
+    ? events.filter((e) => {
+        const searchable = `${e.title} ${e.description || ""} ${e.location || ""} ${e.category || ""}`.toLowerCase();
+        return searchable.includes(searchQuery.toLowerCase());
+      })
+    : events;
+  const eventsWithLocation = displayEvents.filter((e) => e.location);
 
   return (
     <div className="min-h-screen pt-24 pb-32">
-      <section className="relative py-28 px-6 overflow-hidden">
+      {isShowingDemo && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="sticky top-16 z-40 backdrop-blur-xl bg-[var(--card-bg)]/80 border-b border-[var(--line-strong)] px-6 py-3"
+        >
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <p className="text-xs sm:text-sm font-body font-light text-chrono-muted">
+              Sample locations &mdash; your memories will appear here
+            </p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/map" })}
+              className="px-4 py-1.5 text-xs font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all whitespace-nowrap ml-4"
+            >
+              Start yours
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      <section className="relative py-16 md:py-28 px-6 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -42,7 +104,7 @@ export default function MapPage() {
           <span className="section-label mb-5 block">
             Explore
           </span>
-          <h1 className="text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight">
             <em className="text-chrono-text">Life Map</em>
           </h1>
           <p className="text-base font-body font-light text-chrono-muted max-w-md mx-auto leading-relaxed">
@@ -52,7 +114,7 @@ export default function MapPage() {
         </motion.div>
       </section>
 
-      {events.length === 0 ? (
+      {displayEvents.length === 0 && !isShowingDemo ? (
         <EmptyState
           icon="timeline"
           title="No locations yet"
@@ -69,7 +131,7 @@ export default function MapPage() {
               transition={{ delay: 0.3, duration: 1.2 }}
               className="max-w-7xl mx-auto"
             >
-              <EventMap events={events} />
+              <EventMap events={displayEvents} />
             </motion.div>
           </section>
 
@@ -130,6 +192,20 @@ export default function MapPage() {
             </section>
           )}
         </>
+      )}
+
+      {isShowingDemo && (
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-28 mb-10">
+          <div className="inline-flex flex-col items-center gap-6">
+            <p className="text-lg font-display font-light italic text-chrono-muted">Where will your story take you?</p>
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/map" })}
+              className="px-8 py-3 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all duration-500"
+            >
+              Start Mapping Your Life
+            </button>
+          </div>
+        </motion.div>
       )}
     </div>
   );
