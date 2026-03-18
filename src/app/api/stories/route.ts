@@ -3,8 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
-// GET /api/stories — returns all AI-generated stories for the authenticated user
-export async function GET() {
+// GET /api/stories — returns AI-generated stories with cursor-based pagination
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -20,11 +20,22 @@ export async function GET() {
       return NextResponse.json({ stories: [], total: 0 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const limit = Math.min(Number(searchParams.get("limit")) || 50, 100);
+    const cursor = searchParams.get("cursor") || undefined;
+
     const dbStories = await prisma.aIStory.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
+
+    let nextCursor: string | undefined;
+    if (dbStories.length > limit) {
+      const nextItem = dbStories.pop()!;
+      nextCursor = nextItem.id;
+    }
 
     const stories = dbStories.map((s) => ({
       id: s.id,
@@ -36,7 +47,7 @@ export async function GET() {
       stats: (s.stats as Record<string, string | number>) ?? undefined,
     }));
 
-    return NextResponse.json({ stories, total: stories.length });
+    return NextResponse.json({ stories, total: stories.length, nextCursor });
   } catch (error) {
     console.error("GET /api/stories error:", error);
     return NextResponse.json({ error: "Failed to fetch stories" }, { status: 500 });

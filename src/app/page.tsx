@@ -697,22 +697,19 @@ function StoriesPreview({ stories }: { stories?: AIStory[] }) {
   );
 }
 
-function TestimonialsSection() {
-  const testimonials = [
+function UseCasesSection() {
+  const useCases = [
     {
-      name: "Sarah K.",
-      role: "Designer",
-      quote: "Crohna turned three years of scattered photos and memories into the most beautiful timeline. I was moved reading my life story.",
+      persona: "The Designer",
+      scenario: "Turning three years of scattered photos and memories into a cohesive, visual timeline of creative milestones.",
     },
     {
-      name: "Marcus T.",
-      role: "Engineer",
-      quote: "I never realized how much I accomplished until I saw it all laid out. The year-in-review feature is incredible.",
+      persona: "The Engineer",
+      scenario: "Mapping career growth, side projects, and conference talks into a year-in-review that reveals just how much was accomplished.",
     },
     {
-      name: "Aisha R.",
-      role: "Student",
-      quote: "Shared my college timeline with my parents and they were blown away. This is the future of digital memories.",
+      persona: "The Student",
+      scenario: "Building a college timeline to share with family — every semester, study abroad trip, and graduation milestone in one place.",
     },
   ];
 
@@ -720,26 +717,26 @@ function TestimonialsSection() {
     <section className="relative py-[80px] md:py-[160px] px-6">
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
-          <span className="section-label mb-5 block">Testimonials</span>
+          <span className="section-label mb-5 block">Example Use Cases</span>
           <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-chrono-text">
-            What people are <em>saying</em>
+            How people use <em>Crohna</em>
           </h2>
         </FadeUp>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-[var(--line)]">
-          {testimonials.map((t, i) => (
-            <FadeUp key={t.name} delay={i * 0.12}>
+          {useCases.map((uc, i) => (
+            <FadeUp key={uc.persona} delay={i * 0.12}>
               <div className="bg-chrono-bg p-5 sm:p-8 md:p-10 h-full flex flex-col">
-                <p className="text-lg font-display font-bold italic leading-relaxed mb-8 flex-1 text-chrono-muted">
-                  &ldquo;{t.quote}&rdquo;
+                <p className="text-sm font-body font-extralight leading-relaxed mb-8 flex-1 text-chrono-muted">
+                  {uc.scenario}
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-body font-light border border-[var(--line-strong)] text-chrono-accent">
-                    {t.name[0]}
+                    {uc.persona.split(" ")[1][0]}
                   </div>
                   <div>
-                    <div className="text-sm font-body font-light text-chrono-text">{t.name}</div>
-                    <div className="text-xs font-body font-extralight text-chrono-muted">{t.role}</div>
+                    <div className="text-sm font-body font-light text-chrono-text">{uc.persona}</div>
+                    <div className="text-[10px] font-body font-extralight text-chrono-muted/60 uppercase tracking-wider">Example scenario</div>
                   </div>
                 </div>
               </div>
@@ -822,7 +819,7 @@ export default function Home() {
       <MarqueeTicker />
       <MapPreview />
       <StoriesPreview stories={userStories} />
-      <TestimonialsSection />
+      <UseCasesSection />
       <CTASection />
     </>
   );

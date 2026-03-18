@@ -19,7 +19,7 @@ export function useEvents(limit = 50) {
   });
 
   const events = data?.events || [];
-  const isShowingDemo = isReady && (!isAuthenticated || (!isLoading && events.length === 0));
+  const isShowingDemo = isReady && !isAuthenticated;
   const displayEvents = isShowingDemo ? demoEvents : events;
 
   return {

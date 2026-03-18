@@ -1,4 +1,7 @@
-// In-memory rate limiter with per-namespace, per-user token bucket
+// In-memory rate limiter with per-namespace, per-user token bucket.
+// NOTE: This rate limiter resets on every server restart and does not work
+// across multiple serverless instances (e.g. Vercel). For production at scale,
+// replace with a distributed store like Upstash Redis or Vercel KV.
 const stores = new Map<string, Map<string, { count: number; resetAt: number }>>();
 
 export function createRateLimiter(namespace: string, maxRequests: number, windowMs: number) {

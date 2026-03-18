@@ -90,19 +90,14 @@ export default function TimelinePage() {
       })
       .then((data) => {
         const real = data.events || [];
-        if (real.length === 0) {
-          setEvents(demoEvents);
-          setIsShowingDemo(true);
-        } else {
-          setEvents(real);
-          setIsShowingDemo(false);
-        }
+        setEvents(real);
+        setIsShowingDemo(false);
         setNextCursor(data.nextCursor);
         setLoading(false);
       })
       .catch(() => {
-        setEvents(demoEvents);
-        setIsShowingDemo(true);
+        setEvents([]);
+        setIsShowingDemo(false);
         setLoading(false);
       });
   }, [session, status]);

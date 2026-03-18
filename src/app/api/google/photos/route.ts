@@ -107,35 +107,50 @@ export async function POST(req: NextRequest) {
 
     const existingUrls = new Set(existingPhotoEvents.map((e) => e.imageUrl).filter(Boolean));
 
-    let imported = 0;
+    // Collect events to batch insert
+    const eventsToCreate: {
+      userId: string;
+      title: string;
+      date: Date;
+      imageUrl: string;
+      description: string | null;
+      category: string;
+      source: string;
+    }[] = [];
+
     for (const item of mediaItems) {
-      if (!item.baseUrl || !item.mediaMetadata?.creationTime) continue;
+      if (!item.baseUrl || !item.mediaMetadata?.creationTime || !item.id) continue;
 
-      // Use the baseUrl with size parameter for display
-      const imageUrl = `${item.baseUrl}=w800-h600`;
+      // Store the mediaItemId as a stable identifier instead of the temporary baseUrl.
+      // The baseUrl from Google Photos API expires after ~1 hour.
+      // We use a placeholder URL with the mediaItemId so we can re-fetch on demand.
+      const imageUrl = `gphotos://${item.id}`;
 
-      // Skip if we already imported this photo (by checking if description matches the ID)
+      // Skip if we already imported this photo
       if (existingUrls.has(imageUrl)) continue;
 
       const creationTime = new Date(item.mediaMetadata.creationTime);
       if (isNaN(creationTime.getTime())) continue;
       const title = item.description?.trim() || `Photo from ${creationTime.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
 
-      await prisma.event.create({
-        data: {
-          userId: user.id,
-          title: title.substring(0, 500),
-          date: creationTime,
-          imageUrl,
-          description: item.description?.trim()?.substring(0, 5000) || null,
-          category: "life",
-          source: "photos",
-        },
+      eventsToCreate.push({
+        userId: user.id,
+        title: title.substring(0, 500),
+        date: creationTime,
+        imageUrl,
+        description: item.description?.trim()?.substring(0, 5000) || null,
+        category: "life",
+        source: "photos",
       });
 
       existingUrls.add(imageUrl);
-      imported++;
     }
+
+    // Batch insert all events at once instead of N+1 sequential inserts
+    if (eventsToCreate.length > 0) {
+      await prisma.event.createMany({ data: eventsToCreate });
+    }
+    const imported = eventsToCreate.length;
 
     return NextResponse.json({ success: true, imported, total: mediaItems.length });
   } catch (error) {
