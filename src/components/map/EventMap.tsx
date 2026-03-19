@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TimelineEvent } from "@/data/demo";
 import { formatDate, resolveImageUrl, getCategoryColor } from "@/lib/utils";
+import { useTheme } from "@/components/ui/ThemeProvider";
 import Image from "next/image";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -24,10 +25,12 @@ interface EventMapProps {
 export default function EventMap({ events }: EventMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMap = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const polylinesRef = useRef<L.Polyline[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { theme } = useTheme();
 
   const eventsWithCoords = useMemo(
     () => events.filter((e) => e.latitude !== undefined && e.longitude !== undefined),
@@ -61,10 +64,12 @@ export default function EventMap({ events }: EventMapProps) {
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      { maxZoom: 19, subdomains: "abcd" }
-    ).addTo(map);
+    const tileUrl = theme === "light"
+      ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
+    const tileLayer = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(map);
+    tileLayerRef.current = tileLayer;
 
     leafletMap.current = map;
     setMapLoaded(true);
@@ -76,6 +81,15 @@ export default function EventMap({ events }: EventMapProps) {
       }
     };
   }, []);
+
+  // Swap tile layer when theme changes
+  useEffect(() => {
+    if (!leafletMap.current || !tileLayerRef.current) return;
+    const tileUrl = theme === "light"
+      ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    tileLayerRef.current.setUrl(tileUrl);
+  }, [theme]);
 
   // Manage markers when events change
   useEffect(() => {
@@ -90,22 +104,25 @@ export default function EventMap({ events }: EventMapProps) {
 
     // Add new markers
     eventsWithCoords.forEach((event) => {
+      const color = getCategoryColor(event.category);
       const markerHtml = `
         <div style="position:relative;width:12px;height:12px;">
           <div style="
             width:12px;height:12px;border-radius:50%;
             background:rgba(255,255,255,0.12);
-            border:1.5px solid rgba(255,255,255,0.8);
-            box-shadow:0 0 20px rgba(255,255,255,0.4);
+            border:1.5px solid ${color};
+            box-shadow:0 0 20px ${color};
           "></div>
           <div style="
             position:absolute;inset:-4px;border-radius:50%;
-            border:1px solid rgba(255,255,255,0.3);
+            border:1px solid ${color};
+            opacity:0.3;
             animation:markerPulse 2s ease-out infinite;
           "></div>
           <div style="
             position:absolute;inset:-8px;border-radius:50%;
-            border:1px solid rgba(255,255,255,0.15);
+            border:1px solid ${color};
+            opacity:0.15;
             animation:markerPulse 2s ease-out infinite 0.5s;
           "></div>
         </div>

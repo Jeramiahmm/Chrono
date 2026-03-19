@@ -296,7 +296,7 @@ export const insightStats = {
   mostVisitedCity: "Boulder, CO",
   topCategory: "Travel",
   yearWithMostEvents: 2024,
-  longestStreak: "14 days",
+  longestActiveRun: "14 events",
   categories: [
     { name: "Travel", count: 5, color: "rgba(255,255,255,0.8)" },
     { name: "Career", count: 4, color: "rgba(255,255,255,0.6)" },
@@ -320,19 +320,5 @@ export const insightStats = {
   ],
 };
 
-export function getEventsByYear(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
-  const grouped: Record<string, TimelineEvent[]> = {};
-  for (const event of events) {
-    const year = new Date(event.date).getFullYear().toString();
-    if (!grouped[year]) grouped[year] = [];
-    grouped[year].push(event);
-  }
-  // Sort years descending
-  const sorted: Record<string, TimelineEvent[]> = {};
-  for (const year of Object.keys(grouped).sort((a, b) => Number(b) - Number(a))) {
-    sorted[year] = grouped[year].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-  }
-  return sorted;
-}
+// Re-export from utils for backwards compatibility
+export { getEventsByYear } from "@/lib/utils";

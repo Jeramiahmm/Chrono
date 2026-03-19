@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -7,7 +8,15 @@ import EventMap from "@/components/map/EventMap";
 import EmptyState from "@/components/ui/EmptyState";
 import { useEvents } from "@/hooks/useEvents";
 
-export default function MapPage() {
+export default function MapPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24 pb-32 flex items-center justify-center"><div className="text-sm font-body font-light text-chrono-muted animate-pulse">Loading your map...</div></div>}>
+      <MapPage />
+    </Suspense>
+  );
+}
+
+function MapPage() {
   const { events, isLoading, isShowingDemo } = useEvents();
 
   const searchParams = useSearchParams();

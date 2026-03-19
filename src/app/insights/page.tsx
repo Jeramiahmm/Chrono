@@ -1,8 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useCallback } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useCallback, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { AIStory } from "@/data/demo";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
@@ -17,14 +18,44 @@ import { toast } from "sonner";
 import { useStories } from "@/hooks/useStories";
 import { useInsights } from "@/hooks/useInsights";
 
-export default function InsightsPage() {
+export default function InsightsPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24 pb-32 flex items-center justify-center"><div className="text-sm font-body font-light text-chrono-muted animate-pulse">Loading insights...</div></div>}>
+      <InsightsPage />
+    </Suspense>
+  );
+}
+
+function InsightsPage() {
   const { stories, isLoading: storiesLoading, isShowingDemo, mutate: mutateStories } = useStories();
   const { stats, isLoading: statsLoading } = useInsights();
+  const { data: session } = useSession();
   const loading = storiesLoading || statsLoading;
   const [generating, setGenerating] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareStory, setShareStory] = useState<AIStory | null>(null);
   const [storyFilter, setStoryFilter] = useState<"all" | "year" | "chapter">("all");
+  const [sharingEnabled, setSharingEnabled] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("chrono-privacy");
+    if (stored) {
+      try {
+        const prefs = JSON.parse(stored);
+        setSharingEnabled(prefs.shareableStories ?? true);
+      } catch { /* ignore */ }
+    }
+    if (!session) return;
+    fetch("/api/user")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        const prefs = data?.user?.preferences;
+        if (prefs && typeof prefs === "object") {
+          setSharingEnabled(prefs.shareableStories ?? true);
+        }
+      })
+      .catch(() => {});
+  }, [session]);
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
@@ -47,6 +78,28 @@ export default function InsightsPage() {
     setShareStory(story);
     setShareOpen(true);
   }, []);
+
+  const handleGenerateStory = useCallback(async (year?: number) => {
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ year, period: year ? undefined : "All Time" }),
+      });
+      if (res.ok) {
+        mutateStories();
+        toast.success("Story generated!");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to generate story");
+      }
+    } catch {
+      toast.error("Failed to generate story");
+    } finally {
+      setGenerating(false);
+    }
+  }, [mutateStories]);
 
   const filteredStories = stories.filter((s) => {
     if (storyFilter === "year") return s.year !== undefined;
@@ -164,7 +217,7 @@ export default function InsightsPage() {
             {[
               { label: "Most visited city", value: stats.mostVisitedCity },
               { label: "Top category", value: stats.topCategory },
-              { label: "Longest active streak", value: stats.longestStreak },
+              { label: "Longest active run", value: stats.longestActiveRun },
             ].map((item, i) => (
               <motion.div
                 key={item.label}
@@ -225,6 +278,28 @@ export default function InsightsPage() {
                 Emotional, crafted narratives about your life chapters and milestones.
               </p>
             </motion.div>
+
+            {!isShowingDemo && (
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <button
+                  onClick={() => handleGenerateStory(new Date().getFullYear())}
+                  disabled={generating}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-body font-light bg-foreground text-background rounded-full hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {generating && (
+                    <div className="w-3.5 h-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                  )}
+                  Generate {new Date().getFullYear()} Story
+                </button>
+                <button
+                  onClick={() => handleGenerateStory()}
+                  disabled={generating}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-body font-light text-chrono-muted border border-[var(--line-strong)] hover:border-[var(--line-hover)] hover:text-chrono-text rounded-full transition-all disabled:opacity-50"
+                >
+                  Generate All-Time Story
+                </button>
+              </div>
+            )}
 
             <div className="flex justify-center gap-2 mb-10">
               {[
@@ -288,15 +363,17 @@ export default function InsightsPage() {
                         </svg>
                         Regenerate
                       </button>
-                      <button
-                        onClick={() => handleShare(story)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                        </svg>
-                        Share
-                      </button>
+                      {sharingEnabled && (
+                        <button
+                          onClick={() => handleShare(story)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] transition-all"
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                          </svg>
+                          Share
+                        </button>
+                      )}
                       <button
                         onClick={async () => {
                           try {

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -10,6 +11,9 @@ const checkUploadLimit = createRateLimiter("upload", 10, 60_000);
 
 export async function POST(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -47,7 +51,8 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const safeUserId = (session.user.email || "unknown").replace(/[^a-zA-Z0-9@._-]/g, "_");
+    const filename = `${safeUserId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
 

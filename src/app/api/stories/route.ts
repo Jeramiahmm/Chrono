@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { generateStory } from "@/lib/story-generator";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const checkStoryLimit = createRateLimiter("stories", 5, 60_000);
 
@@ -61,6 +62,9 @@ export async function GET(req: NextRequest) {
 // POST /api/stories — create a new story
 export async function POST(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

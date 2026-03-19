@@ -9,6 +9,7 @@ import ThemeProvider from "@/components/ui/ThemeProvider";
 import SessionProvider from "@/components/providers/SessionProvider";
 import AddMemoryButton from "@/components/ui/AddMemoryButton";
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
+import SessionErrorBanner from "@/components/ui/SessionErrorBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -68,6 +69,7 @@ export default function RootLayout({
             <ErrorBoundary>
               <ScrollProgressBar />
               <Navigation />
+              <SessionErrorBanner />
               <main>{children}</main>
               <AddMemoryButton />
               <Footer />

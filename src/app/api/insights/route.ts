@@ -94,7 +94,7 @@ export async function GET() {
         mostActiveYear,
         mostVisitedCity: cityVisits[0]?.city || "None",
         topCategory: categories[0]?.name || "None",
-        longestStreak: calculateLongestStreak(allDates),
+        longestActiveRun: calculateLongestActiveRun(allDates),
         categories,
         yearlyEvents,
         cityVisits,
@@ -106,7 +106,7 @@ export async function GET() {
   }
 }
 
-function calculateLongestStreak(dates: Date[]): string {
+function calculateLongestActiveRun(dates: Date[]): string {
   if (dates.length < 2) return dates.length === 1 ? "1 day" : "—";
 
   const sorted = [...dates].sort((a, b) => a.getTime() - b.getTime());

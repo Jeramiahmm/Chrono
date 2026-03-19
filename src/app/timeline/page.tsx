@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { signIn } from "next-auth/react";
@@ -141,7 +142,15 @@ function YearScrubber({ years, activeYear, onYearClick }: { years: string[]; act
   );
 }
 
-export default function TimelinePage() {
+export default function TimelinePageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24 pb-32 flex items-center justify-center"><div className="text-sm font-body font-light text-chrono-muted animate-pulse">Loading your timeline...</div></div>}>
+      <TimelinePage />
+    </Suspense>
+  );
+}
+
+function TimelinePage() {
   const { events, isLoading, isShowingDemo, nextCursor, loadingMore, loadMore, mutate } = useEvents(50);
   const [activeYear, setActiveYear] = useState<string>("");
   const [eventModalOpen, setEventModalOpen] = useState(false);

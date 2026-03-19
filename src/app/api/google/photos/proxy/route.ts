@@ -52,9 +52,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
-    // Redirect to the fresh baseUrl with width parameter for optimized delivery
+    // Fetch the image and stream it back instead of redirecting
     const imageUrl = `${data.baseUrl}=w1200-h800`;
-    return NextResponse.redirect(imageUrl);
+    const imageRes = await fetch(imageUrl);
+    if (!imageRes.ok) {
+      return NextResponse.json({ error: "Failed to fetch photo" }, { status: 500 });
+    }
+    const contentType = imageRes.headers.get("content-type") || "image/jpeg";
+    const imageBuffer = await imageRes.arrayBuffer();
+    return new NextResponse(imageBuffer, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
   } catch (error) {
     console.error("GET /api/google/photos/proxy error:", error);
     return NextResponse.json({ error: "Failed to proxy photo" }, { status: 500 });

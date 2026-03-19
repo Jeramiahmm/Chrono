@@ -66,7 +66,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
 
     const { url: finalImageUrl, error: uploadError } = await uploadImageIfNeeded();
     if (uploadError) {
-      setErrors({ title: uploadError });
+      setErrors({ imageUrl: uploadError });
       setSaving(false);
       return;
     }
@@ -195,6 +195,7 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
                   )}
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                 </div>
+                {errors.imageUrl && <p className="text-xs text-red-400/70 mt-1" role="alert">{errors.imageUrl}</p>}
               </div>
 
               <div>

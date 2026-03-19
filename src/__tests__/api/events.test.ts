@@ -219,7 +219,8 @@ describe("DELETE /api/events", () => {
   it("returns 401 for unauthenticated user", async () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
-    const res = await DELETE();
+    const req = makeRequest("/api/events", { method: "DELETE" });
+    const res = await DELETE(req);
 
     expect(res.status).toBe(401);
   });
@@ -229,7 +230,8 @@ describe("DELETE /api/events", () => {
     mockPrisma.user.findUnique.mockResolvedValue(mockUser);
     mockPrisma.event.updateMany.mockResolvedValue({ count: 5 });
 
-    const res = await DELETE();
+    const req = makeRequest("/api/events", { method: "DELETE" });
+    const res = await DELETE(req);
     const data = await res.json();
 
     expect(res.status).toBe(200);

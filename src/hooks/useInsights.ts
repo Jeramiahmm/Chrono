@@ -12,7 +12,7 @@ interface InsightStats {
   mostActiveYear: number;
   mostVisitedCity: string;
   topCategory: string;
-  longestStreak: string;
+  longestActiveRun: string;
   categories: { name: string; count: number; color: string }[];
   yearlyEvents: { year: number; count: number }[];
   cityVisits: { city: string; count: number }[];
