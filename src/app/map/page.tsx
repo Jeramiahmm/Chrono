@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import EventMap from "@/components/map/EventMap";
+import dynamic from "next/dynamic";
+
+const EventMap = dynamic(() => import("@/components/map/EventMap"), { ssr: false });
 import EmptyState from "@/components/ui/EmptyState";
 import { useEvents } from "@/hooks/useEvents";
 

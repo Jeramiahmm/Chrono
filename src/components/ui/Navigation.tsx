@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { Home, Clock, BarChart3, Map, Settings, Search, Sun, Moon, X } from "lucide-react";
 import { NavBar } from "./tubelight-navbar";
 import { useTheme } from "./ThemeProvider";
@@ -261,7 +261,9 @@ export default function Navigation() {
 
   const extraActions = (
     <>
-      <SearchButton />
+      <Suspense fallback={null}>
+        <SearchButton />
+      </Suspense>
       <ThemeToggle />
       <UserMenu />
     </>
@@ -294,7 +296,9 @@ export default function Navigation() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <SearchButton />
+            <Suspense fallback={null}>
+              <SearchButton />
+            </Suspense>
             <ThemeToggle />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
