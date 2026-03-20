@@ -1,7 +1,83 @@
-// Middleware intentionally left empty — pages handle their own auth states
-// to avoid silent redirects that confuse users (e.g. /settings → /)
-export { };
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+
+// Public API routes that don't require authentication
+const PUBLIC_API_ROUTES = new Set([
+  "/api/health",
+  "/api/auth",
+]);
+
+function isPublicApiRoute(pathname: string): boolean {
+  for (const route of PUBLIC_API_ROUTES) {
+    if (pathname === route || pathname.startsWith(route + "/")) return true;
+  }
+  return false;
+}
+
+/**
+ * Validates the Origin header on mutating requests as CSRF defense-in-depth.
+ */
+function validateCsrfInMiddleware(req: NextRequest): NextResponse | null {
+  const method = req.method.toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") return null;
+
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+
+  if (!origin && !referer) {
+    return NextResponse.json(
+      { error: "Forbidden: missing origin header" },
+      { status: 403 }
+    );
+  }
+
+  const allowedHost = req.nextUrl.host;
+
+  const headerToCheck = origin || referer;
+  if (headerToCheck) {
+    try {
+      const parsedHost = new URL(headerToCheck).host;
+      if (parsedHost !== allowedHost) {
+        return NextResponse.json(
+          { error: "Forbidden: cross-origin request" },
+          { status: 403 }
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: "Forbidden: invalid origin" },
+        { status: 403 }
+      );
+    }
+  }
+
+  return null;
+}
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Skip public routes
+  if (isPublicApiRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // CSRF check on all mutating API requests
+  const csrfError = validateCsrfInMiddleware(req);
+  if (csrfError) return csrfError;
+
+  // Auth check: all non-public API routes require a valid session
+  const method = req.method.toUpperCase();
+  if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token?.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: [],
+  matcher: ["/api/:path*"],
 };

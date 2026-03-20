@@ -38,10 +38,21 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
   } = useEventForm();
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  // Clean up success timer on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
 
   // Reset form when modal opens or event changes
   useEffect(() => {
     if (isOpen) {
+      // Track the element that triggered the modal for focus return
+      triggerRef.current = document.activeElement as HTMLElement;
       resetForm({
         title: event?.title || "",
         date: event?.date || "",
@@ -52,6 +63,11 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
         chapter: event?.chapter || "",
       });
       setShowSuccess(false);
+    } else {
+      // Return focus to trigger element on close
+      if (triggerRef.current && typeof triggerRef.current.focus === "function") {
+        triggerRef.current.focus();
+      }
     }
   }, [isOpen, event, resetForm, setShowSuccess]);
 
@@ -79,7 +95,8 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
     });
 
     setShowSuccess(true);
-    setTimeout(() => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    successTimerRef.current = setTimeout(() => {
       setShowSuccess(false);
       onClose();
     }, 1200);
@@ -165,10 +182,14 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
               <div>
                 <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Photo</label>
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload photo. Drag and drop or press Enter to select a file."
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
                   className={`relative h-40 border-2 border-dashed transition-all cursor-pointer overflow-hidden ${
                     dragOver
                       ? "border-[var(--line-hover)] bg-[var(--muted)]"
@@ -259,10 +280,12 @@ export default function EventModal({ isOpen, onClose, onSave, event, onDelete }:
 
               <div>
                 <label className="text-xs text-chrono-muted uppercase tracking-wider block mb-2">Category</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Event category">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat.value}
+                      role="radio"
+                      aria-checked={form.category === cat.value}
                       onClick={() => toggleField("category", cat.value)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                         form.category === cat.value

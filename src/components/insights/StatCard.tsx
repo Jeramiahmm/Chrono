@@ -58,9 +58,10 @@ export default function StatCard({ label, value, suffix, delay = 0 }: StatCardPr
       viewport={{ once: true }}
       transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
       className="relative group"
+      aria-label={`${label}: ${value}${suffix || ""}`}
     >
       <div className="bg-chrono-bg p-8 md:p-10 card-hover overflow-hidden border border-[var(--line-strong)]">
-        <div className="text-4xl md:text-5xl font-display font-bold text-chrono-text mb-3">
+        <div className="text-4xl md:text-5xl font-display font-bold text-chrono-text mb-3" aria-hidden="true">
           {isNumeric ? <AnimatedNumber value={value} suffix={suffix} /> : value}
         </div>
         <div className="section-label">

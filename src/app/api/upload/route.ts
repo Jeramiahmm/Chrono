@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { getExtensionFromMime } from "@/lib/url-validation";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ext = file.name.split(".").pop() || "jpg";
+    // Derive extension from validated MIME type, not user-supplied filename
+    const ext = getExtensionFromMime(file.type);
     const safeUserId = (session.user.email || "unknown").replace(/[^a-zA-Z0-9@._-]/g, "_");
     const filename = `${safeUserId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 

@@ -8,8 +8,14 @@ export function validateCsrf(req: NextRequest): NextResponse | null {
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
 
-  // Allow requests with no origin (e.g., same-origin navigations, server-side)
-  if (!origin && !referer) return null;
+  // Reject mutating requests that have neither origin nor referer.
+  // Some HTTP clients/proxies strip both headers — we cannot verify the source.
+  if (!origin && !referer) {
+    return NextResponse.json(
+      { error: "Forbidden: missing origin header" },
+      { status: 403 }
+    );
+  }
 
   const allowedHost = req.nextUrl.host;
 

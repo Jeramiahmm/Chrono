@@ -18,7 +18,10 @@ const mockStory = {
 };
 
 function makeRequest(url: string, options?: RequestInit) {
-  return new NextRequest(new URL(url, "http://localhost:3000"), options);
+  return new NextRequest(new URL(url, "http://localhost:3000"), {
+    ...options,
+    headers: { origin: "http://localhost:3000", ...options?.headers },
+  });
 }
 
 const makeParams = (id: string) => ({ params: Promise.resolve({ id }) });

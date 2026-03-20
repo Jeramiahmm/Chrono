@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ stories: [], total: 0 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const prisma = getPrisma();
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ stories: [], total: 0 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -86,7 +86,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const { year, period } = body;
 
     if (year !== undefined && year !== null) {

@@ -81,12 +81,12 @@ function HeroButtons() {
       >
         Get Started
       </button>
-      <a
+      <Link
         href="/insights"
         className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-full transition-all duration-500 text-sm font-body font-light tracking-wide inline-block cursor-pointer"
       >
         View Insights
-      </a>
+      </Link>
     </div>
   );
 }

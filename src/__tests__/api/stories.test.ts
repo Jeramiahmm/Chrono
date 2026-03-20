@@ -8,7 +8,10 @@ const mockSession = { user: { email: "test@example.com" } };
 const mockUser = { id: "user-1", email: "test@example.com" };
 
 function makeRequest(url: string, options?: RequestInit) {
-  return new NextRequest(new URL(url, "http://localhost:3000"), options);
+  return new NextRequest(new URL(url, "http://localhost:3000"), {
+    ...options,
+    headers: { origin: "http://localhost:3000", ...options?.headers },
+  });
 }
 
 beforeEach(() => {
@@ -16,14 +19,13 @@ beforeEach(() => {
 });
 
 describe("GET /api/stories", () => {
-  it("returns empty for unauthenticated user", async () => {
+  it("returns 401 for unauthenticated user", async () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
     const req = makeRequest("/api/stories");
     const res = await GET(req);
-    const data = await res.json();
 
-    expect(data.stories).toEqual([]);
+    expect(res.status).toBe(401);
   });
 
   it("returns stories with pagination", async () => {
