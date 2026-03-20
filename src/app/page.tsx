@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { demoEvents, demoStories, getEventsByYear, TimelineEvent, AIStory } from "@/data/demo";
 import TimelineCard from "@/components/timeline/TimelineCard";
 import AIStorySummary from "@/components/timeline/AIStorySummary";
@@ -63,20 +63,24 @@ function AnimatedWord() {
 
 function HeroButtons() {
   const { data: session, status } = useSession();
+  const isLoggedIn = status !== "loading" && !!session;
 
-  const getStartedHref =
-    status !== "loading" && session
-      ? "/timeline"
-      : "/api/auth/signin/google?callbackUrl=%2Ftimeline";
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      window.location.href = "/timeline";
+    } else {
+      signIn("google", { callbackUrl: "/timeline" });
+    }
+  };
 
   return (
     <div className="absolute left-0 right-0 z-50 flex flex-col sm:flex-row items-center justify-center gap-4" style={{ bottom: "18vh" }}>
-      <a
-        href={getStartedHref}
+      <button
+        onClick={handleGetStarted}
         className="inline-flex cursor-pointer items-center justify-center rounded-full px-10 py-4 text-sm font-body font-light tracking-wide transition-all duration-300 bg-[var(--foreground)] text-[var(--background)] hover:scale-[1.02] active:scale-[0.98]"
       >
         Get Started
-      </a>
+      </button>
       <a
         href="/insights"
         className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-full transition-all duration-500 text-sm font-body font-light tracking-wide inline-block cursor-pointer"
@@ -781,10 +785,15 @@ function UseCasesSection() {
 
 function CTASection() {
   const { data: session, status } = useSession();
-  const getStartedHref =
-    status !== "loading" && session
-      ? "/timeline"
-      : "/api/auth/signin/google?callbackUrl=%2Ftimeline";
+  const isLoggedIn = status !== "loading" && !!session;
+
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      window.location.href = "/timeline";
+    } else {
+      signIn("google", { callbackUrl: "/timeline" });
+    }
+  };
 
   return (
     <section className="relative py-[80px] md:py-[160px] px-6">
@@ -799,12 +808,12 @@ function CTASection() {
         </p>
 
         <div className="relative z-50 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href={getStartedHref}
+          <button
+            onClick={handleGetStarted}
             className="group relative inline-flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-full px-12 py-4 text-base font-body font-light tracking-wide transition-all duration-300 bg-[var(--foreground)] text-[var(--background)] hover:scale-[1.02] active:scale-[0.98]"
           >
             Get Started
-          </a>
+          </button>
           <a
             href="/insights"
             className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-full transition-all duration-500 text-sm font-body font-light inline-block cursor-pointer"

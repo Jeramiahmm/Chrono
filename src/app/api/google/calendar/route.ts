@@ -5,11 +5,15 @@ import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const checkImportLimit = createRateLimiter("google-import", 5, 60_000);
 
 export async function POST(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -84,12 +88,13 @@ export async function POST(req: NextRequest) {
     const imported = await prisma.$transaction(async (tx: any) => {
       const existingCalendarEvents = await tx.event.findMany({
         where: { userId: user.id, source: "calendar" },
-        select: { title: true, date: true },
+        select: { sourceId: true },
       });
 
       const existingSet = new Set(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        existingCalendarEvents.map((e: any) => `${e.title}|${e.date.toISOString().split("T")[0]}`)
+        existingCalendarEvents
+          .map((e: { sourceId: string | null }) => e.sourceId)
+          .filter(Boolean)
       );
 
       const eventsToCreate: {
@@ -101,6 +106,7 @@ export async function POST(req: NextRequest) {
         description: string | null;
         category: string;
         source: string;
+        sourceId: string | null;
       }[] = [];
 
       for (const item of items) {
@@ -114,9 +120,8 @@ export async function POST(req: NextRequest) {
         const parsedDate = isDateOnly ? new Date(startDate + "T00:00:00") : new Date(startDate);
         if (isNaN(parsedDate.getTime())) continue;
 
-        const dateStr = parsedDate.toISOString().split("T")[0];
-        const key = `${item.summary.trim()}|${dateStr}`;
-        if (existingSet.has(key)) continue;
+        const eventId = item.id as string | undefined;
+        if (eventId && existingSet.has(eventId)) continue;
 
         const location = item.location || null;
 
@@ -129,9 +134,10 @@ export async function POST(req: NextRequest) {
           description: item.description?.trim()?.substring(0, 5000) || null,
           category: "life",
           source: "calendar",
+          sourceId: eventId || null,
         });
 
-        existingSet.add(key);
+        if (eventId) existingSet.add(eventId);
       }
 
       if (eventsToCreate.length > 0) {

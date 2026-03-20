@@ -5,11 +5,15 @@ import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const checkImportLimit = createRateLimiter("google-import", 5, 60_000);
 
 export async function POST(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { generateStory } from "@/lib/story-generator";
+import { validateCsrf } from "@/lib/csrf";
 
 const checkStoryLimit = createRateLimiter("stories", 5, 60_000);
 
@@ -14,6 +15,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -113,6 +117,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

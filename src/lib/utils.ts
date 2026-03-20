@@ -24,17 +24,17 @@ export function formatDateShort(dateStr: string): string {
 export function getCategoryColor(category?: string): string {
   switch (category) {
     case "travel":
-      return "rgba(255,255,255,0.8)";
+      return "rgba(96, 165, 250, 0.8)";  // blue
     case "career":
-      return "rgba(255,255,255,0.6)";
+      return "rgba(251, 191, 36, 0.8)";  // amber
     case "achievement":
-      return "rgba(255,255,255,0.9)";
+      return "rgba(52, 211, 153, 0.8)";  // emerald
     case "education":
-      return "rgba(255,255,255,0.5)";
+      return "rgba(167, 139, 250, 0.8)";  // violet
     case "life":
-      return "rgba(255,255,255,0.7)";
+      return "rgba(251, 113, 133, 0.8)";  // rose
     default:
-      return "rgba(255,255,255,0.8)";
+      return "rgba(148, 163, 184, 0.8)";  // slate
   }
 }
 
@@ -56,4 +56,23 @@ export function getSeason(dateStr: string): string {
   if (month >= 5 && month <= 7) return "Summer";
   if (month >= 8 && month <= 10) return "Fall";
   return "Winter";
+}
+
+/**
+ * Group events by year, sorted descending by year and by date within each year.
+ */
+export function getEventsByYear<T extends { date: string }>(events: T[]): Record<string, T[]> {
+  const grouped: Record<string, T[]> = {};
+  for (const event of events) {
+    const year = new Date(event.date).getFullYear().toString();
+    if (!grouped[year]) grouped[year] = [];
+    grouped[year].push(event);
+  }
+  const sorted: Record<string, T[]> = {};
+  for (const year of Object.keys(grouped).sort((a, b) => Number(b) - Number(a))) {
+    sorted[year] = grouped[year].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }
+  return sorted;
 }

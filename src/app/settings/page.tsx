@@ -19,6 +19,8 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [accountDeleteConfirm, setAccountDeleteConfirm] = useState(false);
+  const [accountDeleting, setAccountDeleting] = useState(false);
 
   // Privacy preferences (server-backed with localStorage cache)
   const [privacySettings, setPrivacySettings] = useState({
@@ -213,6 +215,28 @@ export default function SettingsPage() {
       toast.error("Failed to delete events. Please try again.");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!accountDeleteConfirm) {
+      setAccountDeleteConfirm(true);
+      setTimeout(() => setAccountDeleteConfirm(false), 5000);
+      return;
+    }
+    setAccountDeleting(true);
+    try {
+      const res = await fetch("/api/user", { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Account deleted. Goodbye.");
+        signOut({ callbackUrl: "/" });
+      } else {
+        toast.error("Failed to delete account.");
+      }
+    } catch {
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setAccountDeleting(false);
     }
   };
 
@@ -484,6 +508,13 @@ export default function SettingsPage() {
                 className="text-sm font-body font-light text-red-400/70 hover:text-red-400 transition-colors disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : deleteConfirm ? "Click again to confirm deletion" : "Delete all events"}
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={accountDeleting}
+                className="text-sm font-body font-light text-red-400/70 hover:text-red-400 transition-colors disabled:opacity-50"
+              >
+                {accountDeleting ? "Deleting account..." : accountDeleteConfirm ? "Click again to permanently delete your account" : "Delete account"}
               </button>
             </div>
           </motion.div>

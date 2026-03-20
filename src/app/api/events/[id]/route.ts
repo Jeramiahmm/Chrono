@@ -3,10 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { VALID_CATEGORIES } from "@/lib/constants";
+import { validateCsrf } from "@/lib/csrf";
 
 // PUT /api/events/[id] — update an event
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -100,8 +104,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE /api/events/[id] — delete an event
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {

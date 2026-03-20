@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { VALID_CATEGORIES } from "@/lib/constants";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf";
 
 const checkEventLimit = createRateLimiter("events", 30, 60_000);
 
@@ -91,6 +92,9 @@ export async function GET(req: NextRequest) {
 // POST /api/events — create a new event
 export async function POST(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -175,8 +179,11 @@ export async function POST(req: NextRequest) {
 }
 
 // DELETE /api/events — bulk delete all events for the authenticated user
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   try {
+    const csrfError = validateCsrf(req);
+    if (csrfError) return csrfError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

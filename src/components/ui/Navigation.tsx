@@ -10,21 +10,19 @@ import { NavBar } from "./tubelight-navbar";
 import { useTheme } from "./ThemeProvider";
 import { useSession, signIn, signOut } from "next-auth/react";
 
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/timeline", label: "Timeline" },
-  { href: "/insights", label: "Insights" },
-  { href: "/map", label: "Map" },
-  { href: "/settings", label: "Settings" },
+const NAV_ITEMS = [
+  { label: "Home", href: "/", icon: Home },
+  { label: "Timeline", href: "/timeline", icon: Clock },
+  { label: "Insights", href: "/insights", icon: BarChart3 },
+  { label: "Map", href: "/map", icon: Map },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-const tubelightItems = [
-  { name: "Home", url: "/", icon: Home },
-  { name: "Timeline", url: "/timeline", icon: Clock },
-  { name: "Insights", url: "/insights", icon: BarChart3 },
-  { name: "Map", url: "/map", icon: Map },
-  { name: "Settings", url: "/settings", icon: Settings },
-];
+const tubelightItems = NAV_ITEMS.map((item) => ({
+  name: item.label,
+  url: item.href,
+  icon: item.icon,
+}));
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
@@ -330,7 +328,7 @@ export default function Navigation() {
             style={{ background: "color-mix(in srgb, var(--chrono-bg) 98%, transparent)" }}
           >
             <div className="flex flex-col gap-4">
-              {navItems.map((item, i) => (
+              {NAV_ITEMS.map((item, i) => (
                 <motion.div
                   key={item.href}
                   initial={{ opacity: 0, x: -20 }}
