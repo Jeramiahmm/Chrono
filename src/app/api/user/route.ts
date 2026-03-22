@@ -48,7 +48,12 @@ export async function PUT(req: NextRequest) {
     }
 
     const prisma = getPrisma();
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const { name, preferences } = body;
 
     if (name !== undefined && typeof name === "string" && name.length > 200) {
@@ -98,6 +103,20 @@ export async function DELETE(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Require explicit confirmation to prevent accidental deletion
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Request body with confirmation required" }, { status: 400 });
+    }
+    if (body?.confirm !== "DELETE_MY_ACCOUNT") {
+      return NextResponse.json(
+        { error: "Confirmation required. Send { \"confirm\": \"DELETE_MY_ACCOUNT\" } to proceed." },
+        { status: 400 }
+      );
     }
 
     const prisma = getPrisma();

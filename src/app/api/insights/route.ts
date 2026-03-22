@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { createRateLimiter } from "@/lib/rate-limit";
+
+const checkInsightsLimit = createRateLimiter("insights", 20, 60_000);
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ stats: null });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!(await checkInsightsLimit(session.user.email)).allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a minute." },
+        { status: 429 }
+      );
     }
 
     const prisma = getPrisma();
@@ -43,12 +53,12 @@ export async function GET() {
       prisma.event.count({
         where: { userId: user.id, deletedAt: null, imageUrl: { not: null } },
       }),
-      // We still need dates for streak calculation and year grouping,
-      // but only select the date column (much lighter than full rows)
+      // Only select dates, and cap at 10k to prevent unbounded memory usage
       prisma.event.findMany({
         where: { userId: user.id, deletedAt: null },
         select: { date: true },
         orderBy: { date: "desc" },
+        take: 10_000,
       }),
     ]);
 

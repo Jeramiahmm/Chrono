@@ -253,11 +253,12 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const handleScroll = useCallback(() => setScrolled(window.scrollY > 60), []);
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   const extraActions = (
     <>
@@ -287,7 +288,7 @@ export default function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <span className="text-chrono-muted text-base leading-none select-none">&#x2022;</span>
+            <span className="text-chrono-muted text-base leading-none select-none" aria-hidden="true">&#x2022;</span>
             <span className="text-[13px] font-display font-bold tracking-[0.25em] uppercase text-chrono-text">
               Crohna
             </span>

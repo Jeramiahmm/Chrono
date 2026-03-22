@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 export interface EventFormData {
   title: string;
@@ -32,6 +32,14 @@ export function useEventForm(options?: UseEventFormOptions) {
   const [dragOver, setDragOver] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Abort any in-flight uploads on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const resetForm = useCallback((data?: Partial<EventFormData>) => {
     setForm({ ...EMPTY_FORM, ...data });
@@ -61,17 +69,29 @@ export function useEventForm(options?: UseEventFormOptions) {
   const uploadImageIfNeeded = useCallback(async (): Promise<{ url?: string; error?: string }> => {
     if (!imageFile) return { url: form.imageUrl || undefined };
 
+    // Cancel any previous in-flight upload
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const uploadForm = new FormData();
     uploadForm.append("file", imageFile);
     try {
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadForm });
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadForm,
+        signal: controller.signal,
+      });
       if (!uploadRes.ok) {
         const data = await uploadRes.json();
         return { error: data.error || "Image upload failed" };
       }
       const { url } = await uploadRes.json();
       return { url };
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return { error: "Upload cancelled" };
+      }
       return { error: "Image upload failed" };
     }
   }, [imageFile, form.imageUrl]);

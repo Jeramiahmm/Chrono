@@ -5,6 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { VALID_CATEGORIES } from "@/lib/constants";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf";
+import { validateImageUrl } from "@/lib/url-validation";
 
 const checkEventLimit = createRateLimiter("events", 30, 60_000);
 
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ events: [], total: 0 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const prisma = getPrisma();
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ events: [], total: 0 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -116,7 +117,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const { title, date, endDate, location, latitude, longitude, description, category, imageUrl } = body;
 
     // Validation
@@ -132,6 +138,9 @@ export async function POST(req: NextRequest) {
     if (endDate && isNaN(new Date(endDate).getTime())) {
       return NextResponse.json({ error: "Invalid end date" }, { status: 400 });
     }
+    if (date && endDate && new Date(endDate) < new Date(date)) {
+      return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
+    }
     if (latitude !== undefined && latitude !== null && (typeof latitude !== "number" || latitude < -90 || latitude > 90)) {
       return NextResponse.json({ error: "Latitude must be between -90 and 90" }, { status: 400 });
     }
@@ -143,14 +152,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (imageUrl && typeof imageUrl === "string") {
-      try {
-        const parsed = new URL(imageUrl);
-        if (!["http:", "https:"].includes(parsed.protocol)) {
-          return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
-        }
-      } catch {
-        return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
+      const urlError = validateImageUrl(imageUrl);
+      if (urlError) {
+        return NextResponse.json({ error: urlError }, { status: 400 });
       }
+    }
+    if (location && typeof location === "string" && location.length > 500) {
+      return NextResponse.json({ error: "Location must be under 500 characters" }, { status: 400 });
     }
 
     const cat = category && VALID_CATEGORIES.includes(category.toLowerCase()) ? category.toLowerCase() : "life";

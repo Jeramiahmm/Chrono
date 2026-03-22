@@ -11,13 +11,12 @@ beforeEach(() => {
 });
 
 describe("GET /api/insights", () => {
-  it("returns null stats for unauthenticated user", async () => {
+  it("returns 401 for unauthenticated user", async () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
     const res = await GET();
-    const data = await res.json();
 
-    expect(data.stats).toBeNull();
+    expect(res.status).toBe(401);
   });
 
   it("returns null stats when user has no events", async () => {

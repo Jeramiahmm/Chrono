@@ -14,6 +14,7 @@ function createFileRequest(file: File) {
   formData.append("file", file);
   return new NextRequest(new URL("/api/upload", "http://localhost:3000"), {
     method: "POST",
+    headers: { origin: "http://localhost:3000" },
     body: formData,
   });
 }
@@ -35,6 +36,7 @@ describe("POST /api/upload", () => {
     const formData = new FormData();
     const req = new NextRequest(new URL("/api/upload", "http://localhost:3000"), {
       method: "POST",
+      headers: { origin: "http://localhost:3000" },
       body: formData,
     });
     const res = await POST(req);

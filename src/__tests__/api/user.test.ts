@@ -52,6 +52,7 @@ describe("PUT /api/user", () => {
     mockPrisma.user.update.mockResolvedValue({ ...mockUser, name: "New Name" });
 
     const req = new NextRequest(new URL("/api/user", "http://localhost:3000"), {
+      headers: { origin: "http://localhost:3000" },
       method: "PUT",
       body: JSON.stringify({ name: "New Name" }),
     });
@@ -66,6 +67,7 @@ describe("PUT /api/user", () => {
     vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
     const req = new NextRequest(new URL("/api/user", "http://localhost:3000"), {
+      headers: { origin: "http://localhost:3000" },
       method: "PUT",
       body: JSON.stringify({ name: "a".repeat(201) }),
     });
@@ -78,6 +80,7 @@ describe("PUT /api/user", () => {
     vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
     const req = new NextRequest(new URL("/api/user", "http://localhost:3000"), {
+      headers: { origin: "http://localhost:3000" },
       method: "PUT",
       body: JSON.stringify({ preferences: "not-an-object" }),
     });

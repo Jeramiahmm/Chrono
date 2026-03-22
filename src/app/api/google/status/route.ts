@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ calendar: false, photos: false });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const prisma = getPrisma();
@@ -17,7 +17,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ calendar: false, photos: false });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const [calendarCount, photosCount] = await Promise.all([
@@ -29,7 +29,8 @@ export async function GET() {
       calendar: calendarCount > 0,
       photos: photosCount > 0,
     });
-  } catch {
-    return NextResponse.json({ calendar: false, photos: false });
+  } catch (error) {
+    console.error("GET /api/google/status error:", error);
+    return NextResponse.json({ error: "Failed to check status" }, { status: 500 });
   }
 }

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ stories: [], total: 0 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const prisma = getPrisma();
@@ -22,11 +22,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ stories: [], total: 0 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const { searchParams } = new URL(req.url);
-    const limit = Math.min(Number(searchParams.get("limit")) || 50, 100);
+    const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 100);
     const cursor = searchParams.get("cursor") || undefined;
 
     const dbStories = await prisma.aIStory.findMany({
@@ -86,13 +86,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const { year, period } = body;
 
     if (year !== undefined && year !== null) {
       const yearNum = Number(year);
       if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
         return NextResponse.json({ error: "Invalid year" }, { status: 400 });
+      }
+    }
+
+    if (period !== undefined && period !== null) {
+      if (typeof period !== "string" || period.length > 200) {
+        return NextResponse.json({ error: "Period must be a string under 200 characters" }, { status: 400 });
       }
     }
 
@@ -110,6 +121,7 @@ export async function POST(req: NextRequest) {
     const events = await prisma.event.findMany({
       where: eventWhere,
       orderBy: { date: "asc" },
+      take: 10_000,
     });
 
     const eventSummaries = events.map((e) => ({

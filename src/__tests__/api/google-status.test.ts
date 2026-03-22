@@ -11,14 +11,12 @@ beforeEach(() => {
 });
 
 describe("GET /api/google/status", () => {
-  it("returns false for unauthenticated user", async () => {
+  it("returns 401 for unauthenticated user", async () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
     const res = await GET();
-    const data = await res.json();
 
-    expect(data.calendar).toBe(false);
-    expect(data.photos).toBe(false);
+    expect(res.status).toBe(401);
   });
 
   it("returns import status for authenticated user", async () => {

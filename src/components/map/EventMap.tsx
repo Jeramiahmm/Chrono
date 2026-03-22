@@ -55,24 +55,28 @@ export default function EventMap({ events }: EventMapProps) {
   useEffect(() => {
     if (!mapRef.current || leafletMap.current) return;
 
-    const map = L.map(mapRef.current, {
-      center: [39.5, -98.0],
-      zoom: 4,
-      zoomControl: false,
-      attributionControl: false,
-    });
+    try {
+      const map = L.map(mapRef.current, {
+        center: [39.5, -98.0],
+        zoom: 4,
+        zoomControl: false,
+        attributionControl: false,
+      });
 
-    L.control.zoom({ position: "bottomright" }).addTo(map);
+      L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    const tileUrl = theme === "light"
-      ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+      const tileUrl = theme === "light"
+        ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
-    const tileLayer = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(map);
-    tileLayerRef.current = tileLayer;
+      const tileLayer = L.tileLayer(tileUrl, { maxZoom: 19, subdomains: "abcd" }).addTo(map);
+      tileLayerRef.current = tileLayer;
 
-    leafletMap.current = map;
-    setMapLoaded(true);
+      leafletMap.current = map;
+      setMapLoaded(true);
+    } catch (error) {
+      console.error("Failed to initialize map:", error);
+    }
 
     return () => {
       if (leafletMap.current) {
@@ -102,8 +106,9 @@ export default function EventMap({ events }: EventMapProps) {
     polylinesRef.current.forEach((p) => p.remove());
     polylinesRef.current = [];
 
-    // Add new markers
+    // Add new markers with safety checks
     eventsWithCoords.forEach((event) => {
+      if (event.latitude === undefined || event.longitude === undefined) return;
       const color = getCategoryColor(event.category);
       const markerHtml = `
         <div style="position:relative;width:12px;height:12px;">
@@ -135,7 +140,7 @@ export default function EventMap({ events }: EventMapProps) {
         iconAnchor: [10, 10],
       });
 
-      const marker = L.marker([event.latitude!, event.longitude!], { icon }).addTo(map);
+      const marker = L.marker([event.latitude, event.longitude], { icon }).addTo(map);
 
       const popupContent = `
         <div style="
@@ -166,7 +171,9 @@ export default function EventMap({ events }: EventMapProps) {
 
     // Add polylines connecting markers
     if (eventsWithCoords.length > 1) {
-      const latlngs: L.LatLngExpression[] = eventsWithCoords.map((e) => [e.latitude!, e.longitude!]);
+      const latlngs: L.LatLngExpression[] = eventsWithCoords
+        .filter((e) => e.latitude !== undefined && e.longitude !== undefined)
+        .map((e) => [e.latitude as number, e.longitude as number]);
       const polyline = L.polyline(latlngs, {
         color: "rgba(255,255,255,0.1)",
         weight: 1,
@@ -177,7 +184,9 @@ export default function EventMap({ events }: EventMapProps) {
 
     // Auto-fit map to event bounds
     if (eventsWithCoords.length > 0) {
-      const latlngs: L.LatLngExpression[] = eventsWithCoords.map((e) => [e.latitude!, e.longitude!]);
+      const latlngs: L.LatLngExpression[] = eventsWithCoords
+        .filter((e) => e.latitude !== undefined && e.longitude !== undefined)
+        .map((e) => [e.latitude as number, e.longitude as number]);
       const bounds = L.latLngBounds(latlngs);
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
     }
@@ -260,11 +269,11 @@ export default function EventMap({ events }: EventMapProps) {
       </AnimatePresence>
 
       {legendCategories.length > 0 && (
-        <div className="absolute bottom-4 left-4 glass px-4 py-3 z-20">
+        <div className="absolute bottom-4 left-4 glass px-4 py-3 z-20" role="region" aria-label="Map legend">
           <div className="section-label mb-2">Legend</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3" role="list">
             {legendCategories.map((cat) => (
-              <div key={cat.label} className="flex items-center gap-1.5">
+              <div key={cat.label} className="flex items-center gap-1.5" role="listitem">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
                 <span className="text-[11px] font-body font-extralight text-chrono-muted">
                   {cat.label}

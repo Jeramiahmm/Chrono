@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { TimelineEvent } from "@/data/demo";
@@ -12,9 +13,10 @@ interface TimelineCardProps {
   onEdit?: () => void;
 }
 
-export default function TimelineCard({ event, index, isLeft = false, onEdit }: TimelineCardProps) {
+export default memo(function TimelineCard({ event, index, isLeft = false, onEdit }: TimelineCardProps) {
   return (
-    <motion.div
+    <motion.article
+      aria-label={`${event.title} — ${event.date}`}
       initial={{ opacity: 0, x: isLeft ? -40 : 40, y: 20 }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -49,8 +51,9 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
             {onEdit && (
               <button
                 type="button"
+                aria-label={`Edit ${event.title}`}
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white/50 hover:text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white/50 hover:text-white hover:bg-black/50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -71,8 +74,9 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
         {!event.imageUrl && onEdit && (
           <button
             type="button"
+            aria-label={`Edit ${event.title}`}
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text opacity-0 group-hover:opacity-100 transition-all z-10"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-chrono-card flex items-center justify-center text-chrono-muted hover:text-chrono-text opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all z-10"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -110,6 +114,6 @@ export default function TimelineCard({ event, index, isLeft = false, onEdit }: T
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
-}
+});
