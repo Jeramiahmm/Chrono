@@ -14,6 +14,7 @@ import CityChart from "@/components/insights/CityChart";
 import ShareCard from "@/components/share/ShareCard";
 import { AIStoryLoadingSkeleton } from "@/components/ui/Skeletons";
 import EmptyState from "@/components/ui/EmptyState";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "sonner";
 import { useStories } from "@/hooks/useStories";
 import { useInsights } from "@/hooks/useInsights";
@@ -36,7 +37,8 @@ function InsightsPage() {
   const [shareStory, setShareStory] = useState<AIStory | null>(null);
   const [storyFilter, setStoryFilter] = useState<"all" | "year" | "chapter">("all");
   const [sharingEnabled, setSharingEnabled] = useState(true);
-  const [deletingStoryId, setDeletingStoryId] = useState<string | null>(null);
+  const [deleteStoryId, setDeleteStoryId] = useState<string | null>(null);
+  const [deletingStory, setDeletingStory] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("chrono-privacy");
@@ -80,14 +82,11 @@ function InsightsPage() {
     setShareOpen(true);
   }, []);
 
-  const handleDeleteStory = useCallback(async (storyId: string) => {
-    if (deletingStoryId !== storyId) {
-      setDeletingStoryId(storyId);
-      setTimeout(() => setDeletingStoryId(null), 5000);
-      return;
-    }
+  const handleConfirmDeleteStory = useCallback(async () => {
+    if (!deleteStoryId) return;
+    setDeletingStory(true);
     try {
-      const res = await fetch(`/api/stories/${storyId}`, { method: "DELETE" });
+      const res = await fetch(`/api/stories/${deleteStoryId}`, { method: "DELETE" });
       if (res.ok) {
         mutateStories();
         toast.success("Story deleted");
@@ -97,9 +96,10 @@ function InsightsPage() {
     } catch {
       toast.error("Failed to delete story");
     } finally {
-      setDeletingStoryId(null);
+      setDeletingStory(false);
+      setDeleteStoryId(null);
     }
-  }, [deletingStoryId, mutateStories]);
+  }, [deleteStoryId, mutateStories]);
 
   const handleGenerateStory = useCallback(async (year?: number) => {
     setGenerating(true);
@@ -413,13 +413,13 @@ function InsightsPage() {
                         Copy
                       </button>
                       <button
-                        onClick={() => handleDeleteStory(story.id)}
+                        onClick={() => setDeleteStoryId(story.id)}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-body font-light text-red-400/60 hover:text-red-400 border border-[var(--line-strong)] hover:border-red-400/30 transition-all"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                         </svg>
-                        {deletingStoryId === story.id ? "Click to confirm" : "Delete"}
+                        Delete
                       </button>
                     </motion.div>
                   )}
@@ -455,6 +455,17 @@ function InsightsPage() {
           highlights={shareStory.highlights}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteStoryId}
+        onClose={() => setDeleteStoryId(null)}
+        onConfirm={handleConfirmDeleteStory}
+        title="Delete story?"
+        description="This story will be permanently removed. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        loading={deletingStory}
+      />
     </div>
   );
 }

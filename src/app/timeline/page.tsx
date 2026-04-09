@@ -46,12 +46,14 @@ function FilterBar({
       transition={{ delay: 0.2, duration: 0.6 }}
       className="space-y-3"
     >
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap" role="radiogroup" aria-label="Filter by category">
         {FILTER_OPTIONS.map((cat) => {
           const isSelected = cat === "All" ? selectedCategories.size === 0 : selectedCategories.has(cat.toLowerCase());
           return (
             <button
               key={cat}
+              role="radio"
+              aria-checked={isSelected}
               onClick={() => onToggleCategory(cat)}
               className={`px-4 py-1.5 text-xs font-body font-light rounded-full transition-all duration-300 whitespace-nowrap border ${
                 isSelected

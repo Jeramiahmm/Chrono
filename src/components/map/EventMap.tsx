@@ -144,16 +144,16 @@ export default function EventMap({ events }: EventMapProps) {
 
       const popupContent = `
         <div style="
-          background:rgba(5,5,5,0.95);
-          border:1px solid rgba(255,255,255,0.12);
+          background:var(--chrono-surface);
+          border:1px solid var(--line-strong);
           padding:12px 16px;
           font-family:var(--font-body),system-ui,sans-serif;
           min-width:160px;
         ">
-          <div style="font-size:13px;color:#F0EBE1;font-weight:200;margin-bottom:4px;">
+          <div style="font-size:13px;color:var(--chrono-text);font-weight:200;margin-bottom:4px;">
             ${escapeHtml(event.title)}
           </div>
-          <div style="font-size:11px;color:rgba(240,235,225,0.45);">
+          <div style="font-size:11px;color:var(--chrono-muted);">
             ${escapeHtml(event.location || "")}
           </div>
         </div>
