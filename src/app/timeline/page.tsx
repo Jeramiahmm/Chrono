@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { TimelineEvent, getEventsByYear } from "@/data/demo";
 import YearSection from "@/components/timeline/YearSection";
 import EventModal from "@/components/events/EventModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import { toast } from "sonner";
 import { CATEGORIES } from "@/lib/constants";
@@ -158,6 +159,7 @@ function TimelinePage() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
@@ -222,6 +224,7 @@ function TimelinePage() {
       });
       if (res.ok) {
         mutate();
+        toast.success("Event created");
       } else {
         toast.error("Failed to create event. Please try again.");
       }
@@ -248,20 +251,27 @@ function TimelinePage() {
     setEditingEvent(undefined);
   }, [mutate]);
 
-  const handleDeleteEvent = useCallback(async (id: string) => {
+  const handleRequestDelete = useCallback((id: string) => {
+    setDeleteConfirmId(id);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteConfirmId) return;
     try {
-      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/events/${deleteConfirmId}`, { method: "DELETE" });
       if (res.ok) {
         mutate();
+        toast.success("Event deleted");
       } else {
         toast.error("Failed to delete event. Please try again.");
       }
     } catch {
       toast.error("Failed to delete event. Please try again.");
     }
+    setDeleteConfirmId(null);
     setEditingEvent(undefined);
     setEventModalOpen(false);
-  }, [mutate]);
+  }, [deleteConfirmId, mutate]);
 
   const scrollToYear = (year: string) => {
     const el = document.querySelector(`[data-year="${year}"]`);
@@ -439,7 +449,16 @@ function TimelinePage() {
         </motion.div>
       )}
 
-      <EventModal isOpen={eventModalOpen} onClose={() => { setEventModalOpen(false); setEditingEvent(undefined); }} onSave={editingEvent ? handleEditEvent : handleCreateEvent} event={editingEvent} onDelete={handleDeleteEvent} />
+      <EventModal isOpen={eventModalOpen} onClose={() => { setEventModalOpen(false); setEditingEvent(undefined); }} onSave={editingEvent ? handleEditEvent : handleCreateEvent} event={editingEvent} onDelete={handleRequestDelete} />
+      <ConfirmDialog
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete event?"
+        description="This event will be removed from your timeline. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+      />
     </div>
   );
 }

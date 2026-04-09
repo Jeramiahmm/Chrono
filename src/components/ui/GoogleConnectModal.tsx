@@ -27,6 +27,7 @@ export default function GoogleConnectModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<ConnectState>(isConnected ? "success" : "idle");
   const [importCount, setImportCount] = useState<number | null>(null);
+  const [importWarning, setImportWarning] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   useFocusTrap(modalRef, isOpen);
 
@@ -34,6 +35,7 @@ export default function GoogleConnectModal({
     if (isOpen) {
       setState(isConnected ? "success" : "idle");
       setImportCount(null);
+      setImportWarning(null);
       setErrorMessage("");
     }
   }, [isOpen, isConnected]);
@@ -68,6 +70,9 @@ export default function GoogleConnectModal({
       }
 
       setImportCount(data.imported || 0);
+      if (data.warning) {
+        setImportWarning(data.warning);
+      }
       setState("success");
       onConnect();
       toast.success(`Imported ${data.imported || 0} items from ${service}`);
@@ -189,9 +194,14 @@ export default function GoogleConnectModal({
                     <p className="text-sm font-body font-light text-chrono-text mb-2">
                       {successMessage}
                     </p>
-                    <p className="text-xs font-body font-light text-chrono-muted mb-6">
+                    <p className="text-xs font-body font-light text-chrono-muted mb-2">
                       Events are now in your timeline
                     </p>
+                    {importWarning && (
+                      <p className="text-xs font-body font-light text-yellow-500/80 mb-4 max-w-xs mx-auto">
+                        {importWarning}
+                      </p>
+                    )}
                     <div className="flex items-center justify-center gap-3">
                       <button
                         onClick={handleConnect}

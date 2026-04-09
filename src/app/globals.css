@@ -186,16 +186,6 @@ html.light ::-webkit-scrollbar-thumb:hover {
     border-color: var(--line-hover);
   }
 
-  .mask-gradient-b {
-    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  }
-
-  .mask-gradient-t {
-    mask-image: linear-gradient(to top, black 70%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to top, black 70%, transparent 100%);
-  }
-
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -215,15 +205,6 @@ html.light ::-webkit-scrollbar-thumb:hover {
     user-select: none;
     line-height: 1;
   }
-}
-
-/* Lenis smooth scroll */
-html.lenis {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto;
 }
 
 /* Selection color */

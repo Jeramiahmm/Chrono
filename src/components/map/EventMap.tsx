@@ -166,6 +166,22 @@ export default function EventMap({ events }: EventMapProps) {
       });
 
       marker.on("click", () => setSelectedEvent(event));
+
+      // Keyboard accessibility: make markers focusable and operable
+      const el = marker.getElement();
+      if (el) {
+        el.setAttribute("tabindex", "0");
+        el.setAttribute("role", "button");
+        el.setAttribute("aria-label", `${event.title}${event.location ? `, ${event.location}` : ""}`);
+        el.addEventListener("keydown", (e: KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            marker.openPopup();
+            setSelectedEvent(event);
+          }
+        });
+      }
+
       markersRef.current.push(marker);
     });
 
