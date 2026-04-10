@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { validateImageUrl, getExtensionFromMime } from "@/lib/url-validation";
 
 // Don't use global mocks for this pure function

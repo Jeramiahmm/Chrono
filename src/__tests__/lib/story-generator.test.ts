@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 
 // Unmock the story generator for this test file — we test the actual module
 vi.unmock("@/lib/story-generator");
@@ -13,7 +13,12 @@ vi.mock("@anthropic-ai/sdk", () => ({
 }));
 
 // Need to import after mocks are set up
-const { generateStory } = await import("@/lib/story-generator");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let generateStory: any;
+beforeAll(async () => {
+  const mod = await import("@/lib/story-generator");
+  generateStory = mod.generateStory;
+});
 
 const sampleEvents = [
   {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createEventSchema, updateEventSchema, deleteAccountSchema, createStorySchema, updateUserSchema } from "@/lib/validation";
 
 vi.unmock("@/lib/validation");

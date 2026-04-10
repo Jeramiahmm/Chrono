@@ -22,7 +22,7 @@ const mockEvent = {
   deletedAt: null,
 };
 
-function makeRequest(url: string, options?: RequestInit) {
+function makeRequest(url: string, options?: Omit<RequestInit, "signal"> & { signal?: AbortSignal }) {
   return new NextRequest(new URL(url, "http://localhost:3000"), {
     ...options,
     headers: { origin: "http://localhost:3000", ...options?.headers },
