@@ -56,6 +56,7 @@ export const mockPrisma = {
     findUnique: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    delete: vi.fn(),
   },
   event: {
     findMany: vi.fn(),
@@ -65,6 +66,7 @@ export const mockPrisma = {
     update: vi.fn(),
     updateMany: vi.fn(),
     delete: vi.fn(),
+    deleteMany: vi.fn(),
     count: vi.fn(),
     groupBy: vi.fn(),
   },
@@ -74,17 +76,31 @@ export const mockPrisma = {
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    deleteMany: vi.fn(),
+  },
+  session: {
+    deleteMany: vi.fn(),
+  },
+  account: {
+    deleteMany: vi.fn(),
   },
   $queryRaw: vi.fn(),
-  $transaction: vi.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
+  $transaction: vi.fn((input: unknown) => {
+    // Support both array and function patterns
+    if (Array.isArray(input)) return Promise.resolve(input);
+    if (typeof input === "function") return (input as (tx: typeof mockPrisma) => Promise<unknown>)(mockPrisma);
+    return Promise.resolve(input);
+  }),
 };
 
 // Shared mock Supabase client
+export const mockBucket = {
+  upload: vi.fn(() => ({ error: null })),
+  getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://example.com/image.jpg" } })),
+};
+
 export const mockSupabase = {
   storage: {
-    from: vi.fn(() => ({
-      upload: vi.fn(() => ({ error: null })),
-      getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://example.com/image.jpg" } })),
-    })),
+    from: vi.fn(() => mockBucket),
   },
 };
