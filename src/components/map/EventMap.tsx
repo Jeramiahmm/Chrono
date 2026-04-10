@@ -6,6 +6,7 @@ import { TimelineEvent } from "@/data/demo";
 import { formatDate, resolveImageUrl, getCategoryColor } from "@/lib/utils";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Image from "next/image";
+import Link from "next/link";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -273,12 +274,23 @@ export default function EventMap({ events }: EventMapProps) {
                   {selectedEvent.description}
                 </p>
               )}
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="mt-4 text-xs font-body font-extralight text-chrono-muted hover:text-chrono-text transition-colors"
-              >
-                Close
-              </button>
+              <div className="mt-4 flex items-center gap-3">
+                <Link
+                  href={`/timeline?q=${encodeURIComponent(selectedEvent.title)}`}
+                  className="text-xs font-body font-extralight text-chrono-accent hover:text-chrono-text transition-colors flex items-center gap-1"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  View in Timeline
+                </Link>
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-xs font-body font-extralight text-chrono-muted hover:text-chrono-text transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

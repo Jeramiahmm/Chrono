@@ -259,21 +259,58 @@ function TimelinePage() {
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteConfirmId) return;
+    const deletedId = deleteConfirmId;
+    setDeleteConfirmId(null);
+    setEditingEvent(undefined);
+    setEventModalOpen(false);
     try {
-      const res = await fetch(`/api/events/${deleteConfirmId}`, { method: "DELETE" });
+      const res = await fetch(`/api/events/${deletedId}`, { method: "DELETE" });
       if (res.ok) {
         mutate();
-        toast.success("Event deleted");
+        toast("Event deleted", {
+          duration: 30000,
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              try {
+                const restoreRes = await fetch(`/api/events/${deletedId}/restore`, { method: "POST" });
+                if (restoreRes.ok) {
+                  mutate();
+                  toast.success("Event restored");
+                } else {
+                  toast.error("Failed to restore event");
+                }
+              } catch {
+                toast.error("Failed to restore event");
+              }
+            },
+          },
+        });
       } else {
         toast.error("Failed to delete event. Please try again.");
       }
     } catch {
       toast.error("Failed to delete event. Please try again.");
     }
-    setDeleteConfirmId(null);
-    setEditingEvent(undefined);
-    setEventModalOpen(false);
   }, [deleteConfirmId, mutate]);
+
+  const handleGenerateStory = useCallback(async (year: number) => {
+    try {
+      const res = await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ year }),
+      });
+      if (res.ok) {
+        toast.success(`${year} story generated! View it on the Insights page.`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to generate story");
+      }
+    } catch {
+      toast.error("Failed to generate story");
+    }
+  }, []);
 
   const scrollToYear = (year: string) => {
     const el = document.querySelector(`[data-year="${year}"]`);
@@ -404,7 +441,7 @@ function TimelinePage() {
             <AnimatePresence mode="sync">
               {years.map((year) => (
                   <motion.div key={year} data-year={year} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }}>
-                    <YearSection year={year} events={eventsByYear[year]} onEditEvent={isShowingDemo ? undefined : (event) => { setEditingEvent(event); setEventModalOpen(true); }} />
+                    <YearSection year={year} events={eventsByYear[year]} onEditEvent={isShowingDemo ? undefined : (event) => { setEditingEvent(event); setEventModalOpen(true); }} onGenerateStory={isShowingDemo ? undefined : handleGenerateStory} />
                   </motion.div>
               ))}
             </AnimatePresence>
@@ -457,7 +494,7 @@ function TimelinePage() {
         onClose={() => setDeleteConfirmId(null)}
         onConfirm={handleConfirmDelete}
         title="Delete event?"
-        description="This event will be removed from your timeline. This action cannot be undone."
+        description="This event will be removed from your timeline. You'll have 30 seconds to undo."
         confirmLabel="Delete"
         destructive
       />

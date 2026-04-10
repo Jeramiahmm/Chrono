@@ -144,10 +144,15 @@ export default function GoogleConnectModal({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                       </svg>
                     </div>
-                    <p className="text-sm font-body font-light text-chrono-muted mb-6 max-w-xs mx-auto">
+                    <p className="text-sm font-body font-light text-chrono-muted mb-4 max-w-xs mx-auto">
                       {service === "Google Photos"
                         ? "Import your recent photos as timeline events automatically"
                         : "Import your calendar events into your life timeline"}
+                    </p>
+                    <p className="text-xs font-body font-light text-chrono-muted/60 mb-6 max-w-xs mx-auto">
+                      {service === "Google Photos"
+                        ? "Up to 500 photos from the last 2 years will be imported"
+                        : "Calendar events will be imported and deduplicated"}
                     </p>
                     <button
                       onClick={handleConnect}
@@ -173,8 +178,13 @@ export default function GoogleConnectModal({
                         : "Importing calendar events..."}
                     </p>
                     <p className="text-xs font-body font-light text-chrono-muted mt-2">
-                      This may take a moment
+                      {service === "Google Photos"
+                        ? "Fetching up to 500 photos — this may take a moment"
+                        : "Syncing your calendar — this may take a moment"}
                     </p>
+                    <div className="mt-4 w-48 mx-auto h-1 bg-[var(--line-strong)] rounded-full overflow-hidden">
+                      <div className="h-full bg-chrono-text/30 rounded-full animate-pulse" style={{ width: "60%" }} />
+                    </div>
                   </motion.div>
                 )}
 
