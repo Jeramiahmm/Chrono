@@ -122,11 +122,11 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 
   .section-label {
     font-size: 13px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--chrono-accent);
     font-family: var(--font-body), system-ui, sans-serif;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .archival-img {
@@ -178,14 +178,23 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Flowing text along SVG path */
-@keyframes flowText {
+/* Flowing marquee text */
+@keyframes marqueeLeft {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
-.flow-text-track {
-  animation: flowText 25s linear infinite;
+@keyframes marqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-left {
+  animation: marqueeLeft 30s linear infinite;
+}
+
+.marquee-right {
+  animation: marqueeRight 35s linear infinite;
 }
 
 /* Selection color */
