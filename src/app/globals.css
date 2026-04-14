@@ -5,34 +5,34 @@
 :root {
   /* Wispr Flow inspired — light, editorial, quiet luxury */
   --chrono-bg: #FAF8F5;
-  --chrono-surface: #F3F0EB;
+  --chrono-surface: #F0EDE8;
   --chrono-card: #FFFFFF;
-  --chrono-accent: #4A6B52;
-  --chrono-glow: rgba(74, 107, 82, 0.08);
-  --chrono-text: #1A1A1A;
-  --chrono-muted: rgba(26, 26, 26, 0.5);
+  --chrono-accent: #3D5A44;
+  --chrono-glow: rgba(61, 90, 68, 0.10);
+  --chrono-text: #111111;
+  --chrono-muted: rgba(17, 17, 17, 0.55);
 
-  --line: rgba(26, 26, 26, 0.08);
-  --line-strong: rgba(26, 26, 26, 0.10);
-  --line-hover: rgba(26, 26, 26, 0.22);
+  --line: rgba(17, 17, 17, 0.10);
+  --line-strong: rgba(17, 17, 17, 0.15);
+  --line-hover: rgba(17, 17, 17, 0.28);
   --card-bg: #FFFFFF;
-  --input-bg: #F3F0EB;
+  --input-bg: #F0EDE8;
 }
 
 html.light {
   --chrono-bg: #FAF8F5;
-  --chrono-surface: #F3F0EB;
+  --chrono-surface: #F0EDE8;
   --chrono-card: #FFFFFF;
-  --chrono-accent: #4A6B52;
-  --chrono-glow: rgba(74, 107, 82, 0.08);
-  --chrono-text: #1A1A1A;
-  --chrono-muted: rgba(26, 26, 26, 0.5);
+  --chrono-accent: #3D5A44;
+  --chrono-glow: rgba(61, 90, 68, 0.10);
+  --chrono-text: #111111;
+  --chrono-muted: rgba(17, 17, 17, 0.55);
 
-  --line: rgba(26, 26, 26, 0.08);
-  --line-strong: rgba(26, 26, 26, 0.10);
-  --line-hover: rgba(26, 26, 26, 0.22);
+  --line: rgba(17, 17, 17, 0.10);
+  --line-strong: rgba(17, 17, 17, 0.15);
+  --line-hover: rgba(17, 17, 17, 0.28);
   --card-bg: #FFFFFF;
-  --input-bg: #F3F0EB;
+  --input-bg: #F0EDE8;
 }
 
 html.dark {
@@ -122,11 +122,11 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 
   .section-label {
     font-size: 13px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--chrono-accent);
     font-family: var(--font-body), system-ui, sans-serif;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .archival-img {
@@ -178,9 +178,28 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   }
 }
 
+/* Flowing marquee text */
+@keyframes marqueeLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-left {
+  animation: marqueeLeft 30s linear infinite;
+}
+
+.marquee-right {
+  animation: marqueeRight 35s linear infinite;
+}
+
 /* Selection color */
 ::selection {
-  background: rgba(74, 107, 82, 0.15);
+  background: rgba(61, 90, 68, 0.18);
   color: var(--chrono-text);
 }
 

@@ -31,9 +31,8 @@ export function NavBar({ items, className, extraActions }: NavBarProps) {
       )}
     >
       <div className="max-w-5xl mx-auto flex items-center justify-between py-3 px-6 rounded-2xl bg-[var(--card-bg)]/80 backdrop-blur-xl border border-[var(--line)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-chrono-accent" />
-          <span className="text-[15px] font-display font-semibold tracking-wide text-chrono-text">
+        <Link href="/" className="flex items-center">
+          <span className="text-[18px] font-body font-bold tracking-[-0.01em] text-chrono-text">
             Crohna
           </span>
         </Link>

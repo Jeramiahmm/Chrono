@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signIn } from "next-auth/react";
 import { demoEvents, demoStories, getEventsByYear, TimelineEvent, AIStory } from "@/data/demo";
 import TimelineCard from "@/components/timeline/TimelineCard";
@@ -10,6 +11,7 @@ import AIStorySummary from "@/components/timeline/AIStorySummary";
 import ParticleField from "@/components/three/ParticleField";
 import MarqueeTicker from "@/components/ui/MarqueeTicker";
 import LoadingScreen from "@/components/ui/LoadingScreen";
+import GradientBlob from "@/components/ui/GradientBlob";
 import { useEvents } from "@/hooks/useEvents";
 import { useStories } from "@/hooks/useStories";
 
@@ -77,13 +79,13 @@ function HeroButtons() {
     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
       <button
         onClick={handleGetStarted}
-        className="inline-flex cursor-pointer items-center justify-center rounded-xl px-8 py-3.5 text-sm font-body font-medium tracking-wide transition-all duration-300 bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_12px_rgba(74,107,82,0.25)]"
+        className="inline-flex cursor-pointer items-center justify-center rounded-xl px-8 py-3.5 text-sm font-body font-medium tracking-wide transition-all duration-300 bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_16px_rgba(61,90,68,0.3)]"
       >
         Get Started
       </button>
       <Link
         href="/insights"
-        className="px-8 py-3.5 text-chrono-muted hover:text-chrono-text border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
+        className="px-8 py-3.5 text-chrono-text/70 hover:text-chrono-text border border-chrono-text/15 hover:border-chrono-text/30 rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
       >
         View Insights
       </Link>
@@ -101,39 +103,26 @@ function HeroSection() {
   const scale = useTransform(scrollYProgress, [0, 0.8], [1, 0.97]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section ref={ref} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <ParticleField />
-
-      <div
-        className="absolute inset-0 z-[1] pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 50% 40% at 50% 45%, var(--chrono-glow) 0%, transparent 60%)",
-        }}
-      />
+      <GradientBlob color="sage" size="lg" className="-top-40 -right-40 opacity-50" />
+      <GradientBlob color="lavender" size="md" className="bottom-20 -left-40 opacity-30" />
 
       <motion.div
         style={{ y, scale }}
-        className="relative z-10 text-center px-6 max-w-4xl mx-auto"
+        className="relative z-10 text-center px-6 max-w-5xl mx-auto"
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 1.5 }}
-          className="section-label mb-6"
-        >
-          Your Digital Life Story
-        </motion.div>
-
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display font-semibold tracking-tight mb-8 text-chrono-text"
-          style={{ fontSize: "clamp(2.6rem, 6vw, 4.8rem)", lineHeight: 1.15 }}
+          transition={{ delay: 0.3, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          className="font-display tracking-tight text-chrono-text"
+          style={{ fontSize: "clamp(3.5rem, 10vw, 7.5rem)", lineHeight: 1.05, fontWeight: 400 }}
         >
           <span className="block">Your life,</span>
-          <span className="block pb-1">
-            <AnimatedWord /> mapped
+          <span className="block">
+            <AnimatedWord />{" "}
+            <span className="font-bold">mapped</span>
           </span>
         </motion.h1>
 
@@ -141,11 +130,51 @@ function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 1.2 }}
-          className="text-base md:text-lg font-body font-normal max-w-lg mx-auto leading-relaxed text-chrono-muted"
+          className="text-lg md:text-xl font-body font-normal max-w-lg mx-auto leading-relaxed text-chrono-text/60 mt-8"
         >
-          A visual timeline of your memories, milestones, and places.
+          The visual timeline that turns memories
+          <br className="hidden sm:block" />
+          into clear, beautiful stories.
         </motion.p>
+
         <HeroButtons />
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4, duration: 1 }}
+          className="mt-6 text-sm font-body text-chrono-text/40"
+        >
+          Free to start. No credit card required.
+        </motion.p>
+      </motion.div>
+
+      {/* Flowing diagonal text marquee */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.4, duration: 2 }}
+        className="absolute bottom-0 left-0 right-0 z-10 overflow-hidden pointer-events-none"
+        style={{ height: "28vh" }}
+      >
+        <div className="absolute inset-0 flex flex-col justify-end gap-3 pb-6" style={{ transform: "rotate(-3deg) scale(1.15)" }}>
+          {/* Row 1 - moves left */}
+          <div className="flex whitespace-nowrap marquee-left">
+            {[0, 1].map((i) => (
+              <span key={i} className="font-display italic text-chrono-accent/[0.14] text-[clamp(2.5rem,5vw,4rem)] tracking-wide mr-8" style={{ fontWeight: 400 }}>
+                memories &nbsp;·&nbsp; milestones &nbsp;·&nbsp; places &nbsp;·&nbsp; stories &nbsp;·&nbsp; chapters &nbsp;·&nbsp; your journey &nbsp;·&nbsp; beautifully mapped &nbsp;·&nbsp;&nbsp;
+              </span>
+            ))}
+          </div>
+          {/* Row 2 - moves right */}
+          <div className="flex whitespace-nowrap marquee-right">
+            {[0, 1].map((i) => (
+              <span key={i} className="font-display italic text-chrono-text/[0.08] text-[clamp(2rem,4vw,3.2rem)] tracking-wide mr-8" style={{ fontWeight: 400 }}>
+                timelines &nbsp;·&nbsp; life maps &nbsp;·&nbsp; narratives &nbsp;·&nbsp; moments &nbsp;·&nbsp; adventures &nbsp;·&nbsp; reflections &nbsp;·&nbsp; growth &nbsp;·&nbsp;&nbsp;
+              </span>
+            ))}
+          </div>
+        </div>
       </motion.div>
     </section>
   );
@@ -229,14 +258,18 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
-      <div className="max-w-5xl mx-auto">
-        <FadeUp className="text-center mb-28">
-          <span className="section-label mb-5 block">How It Works</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+    <section className="relative py-[100px] md:py-[180px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      {/* Subtle gradient orbs on dark bg */}
+      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-900/30 via-green-900/20 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-emerald-900/20 via-teal-900/10 to-transparent blur-3xl pointer-events-none" />
+
+      <div className="relative max-w-5xl mx-auto">
+        <FadeUp className="text-center mb-20">
+          <span className="text-[13px] tracking-[0.12em] uppercase text-emerald-400/80 font-body font-medium mb-5 block">How It Works</span>
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-white">
             Three steps to your
             <br />
-            <em>life story</em>
+            <em className="text-emerald-300/90">life story</em>
           </h2>
         </FadeUp>
 
@@ -244,21 +277,103 @@ function HowItWorksSection() {
           {steps.map((step, i) => (
             <FadeUp key={step.number} delay={i * 0.15} className="relative text-center">
               {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-4 left-[60%] right-[-40%] h-px bg-[var(--line)]" />
+                <div className="hidden md:block absolute top-4 left-[60%] right-[-40%] h-px bg-white/10" />
               )}
 
-              <div className="w-10 h-10 rounded-xl bg-chrono-accent/10 flex items-center justify-center mb-5 mx-auto text-sm font-body font-semibold text-chrono-accent">
+              <div className="text-5xl md:text-6xl font-display text-emerald-400/20 mb-4 mx-auto" style={{ fontWeight: 400 }}>
                 {step.number}
               </div>
-              <h3 className="text-lg font-display font-semibold text-chrono-text mb-3">
+              <h3 className="text-xl md:text-2xl font-display text-white mb-3" style={{ fontWeight: 400 }}>
                 {step.title}
               </h3>
-              <p className="text-sm font-body font-normal leading-relaxed max-w-xs mx-auto text-chrono-muted">
+              <p className="text-sm font-body font-normal leading-relaxed max-w-xs mx-auto text-white/50">
                 {step.description}
               </p>
             </FadeUp>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ShowcaseSection() {
+  return (
+    <section className="relative py-[100px] md:py-[180px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+
+      {/* Floating orb */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-gradient-radial from-emerald-900/20 via-transparent to-transparent blur-3xl pointer-events-none" />
+
+      <div className="relative max-w-5xl mx-auto text-center">
+        <FadeUp>
+          <span className="text-[13px] tracking-[0.12em] uppercase text-emerald-400/80 font-body font-medium mb-5 block">Built Different</span>
+          <h2
+            className="font-display tracking-tight text-white mb-8"
+            style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)", lineHeight: 1.1, fontWeight: 400 }}
+          >
+            Not just another
+            <br />
+            <em className="text-emerald-300/90">journaling app</em>
+          </h2>
+          <p className="text-base md:text-lg font-body font-normal max-w-lg mx-auto leading-relaxed text-white/50 mb-16">
+            Crohna is a living canvas for your entire life. Every memory becomes
+            part of a beautiful, interactive narrative you can explore, share, and relive.
+          </p>
+        </FadeUp>
+
+        {/* Product mockup */}
+        <FadeUp delay={0.15}>
+          <div className="relative mb-16 rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+            <div className="relative h-64 md:h-96 overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&q=80&auto=format"
+                alt="Product showcase"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 960px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B1F] via-[#1A2B1F]/20 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+                <div>
+                  <div className="text-white/90 text-lg md:text-xl font-display" style={{ fontWeight: 500 }}>Your timeline, visualized</div>
+                  <div className="text-white/40 text-sm font-body mt-1">Interactive, personal, beautiful</div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </FadeUp>
+
+        <FadeUp delay={0.25}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/10">
+            {[
+              { value: "∞", label: "Memories" },
+              { value: "AI", label: "Narratives" },
+              { value: "360°", label: "Life Map" },
+              { value: "24/7", label: "Your Data" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="bg-[#1A2B1F] px-6 py-10 md:py-14"
+              >
+                <div className="text-3xl md:text-4xl font-display text-emerald-300/90 mb-2" style={{ fontWeight: 500 }}>
+                  {stat.value}
+                </div>
+                <div className="text-[11px] font-body font-semibold text-white/45 uppercase tracking-[0.15em]">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </FadeUp>
       </div>
     </section>
   );
@@ -347,16 +462,17 @@ function PlayYourStorySection({ events }: { events?: TimelineEvent[] }) {
     : null;
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
+    <section className="relative py-[80px] md:py-[140px] px-6 overflow-hidden">
+      <GradientBlob color="warm" size="md" className="-right-40 bottom-0 opacity-25" />
       <div className="max-w-4xl mx-auto">
         <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">Experience</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Play your
             <br />
             <em>story</em>
           </h2>
-          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-muted">
+          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-text/50">
             Watch your life unfold year by year in a cinematic sequence
           </p>
         </FadeUp>
@@ -469,29 +585,40 @@ function PlayYourStorySection({ events }: { events?: TimelineEvent[] }) {
 function FeaturesSection() {
   const features = [
     {
+      number: "01",
       title: "Timeline",
       description: "Every moment organized chronologically. A living record of the events that shaped your story.",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80&auto=format",
     },
     {
+      number: "02",
       title: "Stories",
       description: "Beautiful, emotional summaries of your life chapters. Narratives crafted from your real experiences.",
+      image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600&q=80&auto=format",
     },
     {
+      number: "03",
       title: "Places",
       description: "See where your life happened on an animated map with pins for every memory.",
+      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80&auto=format",
     },
     {
+      number: "04",
       title: "Insights",
       description: "Discover patterns in your life — most active years, favorite cities, biggest milestones.",
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80&auto=format",
     },
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
+    <section className="relative py-[80px] md:py-[160px] px-6 overflow-hidden bg-chrono-surface/50">
+      <GradientBlob color="lavender" size="lg" className="-right-80 top-40 opacity-20" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+
       <div className="max-w-5xl mx-auto">
-        <FadeUp className="text-center mb-28">
+        <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">Features</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
             Everything you need to
             <br />
             <em>relive your story</em>
@@ -501,14 +628,31 @@ function FeaturesSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {features.map((feature, i) => (
             <FadeUp key={feature.title} delay={i * 0.1}>
-              <div className="group bg-[var(--card-bg)] p-6 sm:p-8 md:p-10 rounded-2xl border border-[var(--line)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-500 h-full">
-                <h3 className="text-lg font-display font-semibold mb-3 text-chrono-text tracking-tight">
-                  {feature.title}
-                </h3>
-                <p className="text-sm font-body font-normal leading-relaxed text-chrono-muted">
-                  {feature.description}
-                </p>
-              </div>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="group bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] hover:border-chrono-accent/30 hover:shadow-[0_8px_32px_rgba(61,90,68,0.08)] transition-shadow duration-500 h-full overflow-hidden"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src={feature.image}
+                    alt={feature.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-transparent to-transparent" />
+                </div>
+                <div className="p-8 md:p-10 pt-4">
+                  <span className="text-xs font-body font-semibold text-chrono-accent tracking-widest">{feature.number}</span>
+                  <h3 className="text-2xl md:text-3xl font-display mt-3 mb-4 text-chrono-text tracking-tight" style={{ fontWeight: 500 }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-base font-body font-normal leading-relaxed text-chrono-text/55">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
             </FadeUp>
           ))}
         </div>
@@ -528,10 +672,10 @@ function TimelinePreview({ events }: { events?: TimelineEvent[] }) {
 
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Chapters of Your Life</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Your life <em>in motion</em>
           </h2>
-          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-muted">
+          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-text/50">
             Every event becomes a card on your personal timeline
           </p>
         </FadeUp>
@@ -609,12 +753,12 @@ function MapPreview({ events }: { events?: TimelineEvent[] }) {
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">A Record of Where You&apos;ve Been</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             See where your
             <br />
             <em>story happened</em>
           </h2>
-          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-muted">
+          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-text/50">
             Every memory pinned to the places that matter most
           </p>
         </FadeUp>
@@ -703,12 +847,12 @@ function StoriesPreview({ stories }: { stories?: AIStory[] }) {
       <div className="max-w-4xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Patterns in Your Story</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Narratives written about
             <br />
             <em>your life</em>
           </h2>
-          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-muted">
+          <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-text/50">
             Emotional, personal narratives crafted about your journey
           </p>
         </FadeUp>
@@ -733,23 +877,27 @@ function UseCasesSection() {
     {
       persona: "The Designer",
       scenario: "Turning three years of scattered photos and memories into a cohesive, visual timeline of creative milestones.",
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80&auto=format",
     },
     {
       persona: "The Engineer",
       scenario: "Mapping career growth, side projects, and conference talks into a year-in-review that reveals just how much was accomplished.",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80&auto=format",
     },
     {
       persona: "The Student",
       scenario: "Building a college timeline to share with family — every semester, study abroad trip, and graduation milestone in one place.",
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&q=80&auto=format",
     },
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
+    <section className="relative py-[80px] md:py-[160px] px-6 bg-chrono-surface/50">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
-          <span className="section-label mb-5 block">Example Use Cases</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+          <span className="section-label mb-5 block">Use Cases</span>
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
             How people use <em>Crohna</em>
           </h2>
         </FadeUp>
@@ -757,20 +905,36 @@ function UseCasesSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {useCases.map((uc, i) => (
             <FadeUp key={uc.persona} delay={i * 0.12}>
-              <div className="bg-[var(--card-bg)] p-6 sm:p-8 md:p-10 rounded-2xl border border-[var(--line)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] h-full flex flex-col">
-                <p className="text-sm font-body font-normal leading-relaxed mb-8 flex-1 text-chrono-muted">
-                  {uc.scenario}
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-chrono-accent/10 flex items-center justify-center text-xs font-body font-semibold text-chrono-accent">
-                    {uc.persona.split(" ")[1][0]}
-                  </div>
-                  <div>
-                    <div className="text-sm font-body font-medium text-chrono-text">{uc.persona}</div>
-                    <div className="text-[10px] font-body font-medium text-chrono-muted/60 uppercase tracking-wider">Example scenario</div>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] hover:border-chrono-accent/30 hover:shadow-[0_8px_32px_rgba(61,90,68,0.08)] transition-shadow duration-500 h-full flex flex-col overflow-hidden"
+              >
+                <div className="relative h-40 overflow-hidden">
+                  <Image
+                    src={uc.image}
+                    alt={uc.persona}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-transparent to-transparent" />
+                </div>
+                <div className="p-6 sm:p-8 pt-3 flex flex-col flex-1">
+                  <p className="text-sm font-body font-normal leading-relaxed mb-8 flex-1 text-chrono-text/55">
+                    {uc.scenario}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-chrono-accent/10 flex items-center justify-center text-xs font-body font-bold text-chrono-accent">
+                      {uc.persona.split(" ")[1][0]}
+                    </div>
+                    <div>
+                      <div className="text-sm font-body font-semibold text-chrono-text">{uc.persona}</div>
+                      <div className="text-[10px] font-body font-medium text-chrono-text/35 uppercase tracking-wider">Scenario</div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </FadeUp>
           ))}
         </div>
@@ -792,27 +956,33 @@ function CTASection() {
   };
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
+    <section className="relative py-[100px] md:py-[200px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/10 to-transparent pointer-events-none" />
+
       <FadeUp className="relative max-w-3xl mx-auto text-center">
-        <h2 className="text-3xl md:text-6xl font-display font-semibold tracking-tight mb-8 text-chrono-text">
+        <h2
+          className="font-display tracking-tight mb-8 text-white"
+          style={{ fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.05, fontWeight: 400 }}
+        >
           Ready to map
           <br />
-          <em>your story?</em>
+          <em className="text-emerald-300/90">your story?</em>
         </h2>
-        <p className="text-base font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-chrono-muted">
+        <p className="text-lg font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-white/50">
           Transform your memories into a beautiful, interactive timeline.
         </p>
 
         <div className="relative z-50 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={handleGetStarted}
-            className="group relative inline-flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-10 py-4 text-base font-body font-medium tracking-wide transition-all duration-300 bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_12px_rgba(74,107,82,0.25)]"
+            className="group relative inline-flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-10 py-4 text-base font-body font-medium tracking-wide transition-all duration-300 bg-emerald-400 text-[#1A2B1F] hover:bg-emerald-300 active:scale-[0.98] shadow-[0_2px_20px_rgba(110,231,183,0.2)]"
           >
             Get Started
           </button>
           <a
             href="/insights"
-            className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
+            className="px-6 py-3 md:px-10 md:py-4 text-white/70 hover:text-white border border-white/15 hover:border-white/30 rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
           >
             See a Demo
           </a>
@@ -823,15 +993,97 @@ function CTASection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 1 }}
-          className="flex items-center justify-center gap-8 mt-14 text-xs font-body font-medium text-chrono-muted"
+          className="flex items-center justify-center gap-8 mt-14 text-xs font-body font-medium text-white/35"
         >
           <span>Free to start</span>
-          <span className="w-px h-3 bg-[var(--line)]" />
+          <span className="w-px h-3 bg-white/10" />
           <span>No credit card</span>
-          <span className="w-px h-3 bg-[var(--line)]" />
+          <span className="w-px h-3 bg-white/10" />
           <span>Your data stays private</span>
         </motion.div>
       </FadeUp>
+    </section>
+  );
+}
+
+function PullQuoteSection() {
+  return (
+    <section className="relative py-24 md:py-40 px-6 overflow-hidden">
+      {/* Decorative line accents */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+
+      <div className="max-w-4xl mx-auto text-center">
+        <FadeUp>
+          <div className="w-12 h-px bg-chrono-accent/40 mx-auto mb-10" />
+          <blockquote
+            className="font-display text-3xl md:text-5xl lg:text-6xl leading-snug text-chrono-text"
+            style={{ fontWeight: 400 }}
+          >
+            &ldquo;After 150 years of the same journal,
+            <br className="hidden md:block" />
+            <em className="text-chrono-accent"> your life story</em> finally has a canvas.&rdquo;
+          </blockquote>
+          <div className="w-12 h-px bg-chrono-accent/40 mx-auto mt-10" />
+        </FadeUp>
+      </div>
+    </section>
+  );
+}
+
+function PhotoMosaic() {
+  const photos = [
+    { src: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=600&q=80&auto=format", alt: "Mountain landscape" },
+    { src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80&auto=format", alt: "Sunlit valley" },
+    { src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format", alt: "Portrait" },
+    { src: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600&q=80&auto=format", alt: "Road trip" },
+    { src: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80&auto=format", alt: "Lake view" },
+  ];
+
+  return (
+    <section className="relative py-20 md:py-32 px-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto">
+        <FadeUp className="text-center mb-14">
+          <span className="section-label mb-5 block">Your Canvas</span>
+          <h2 className="text-3xl md:text-5xl font-display tracking-tight text-chrono-text" style={{ fontWeight: 400 }}>
+            Every photo tells a <em>chapter</em>
+          </h2>
+        </FadeUp>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {/* Large feature image */}
+          <FadeUp className="col-span-2 row-span-2">
+            <div className="relative h-full min-h-[280px] md:min-h-[400px] rounded-2xl overflow-hidden group">
+              <Image
+                src={photos[0].src}
+                alt={photos[0].alt}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <span className="text-white/80 text-xs font-body font-medium tracking-wider uppercase">2024 · Travel</span>
+              </div>
+            </div>
+          </FadeUp>
+          {/* Smaller grid images */}
+          {photos.slice(1).map((photo, i) => (
+            <FadeUp key={photo.alt} delay={0.1 + i * 0.08}>
+              <div className="relative h-44 md:h-48 rounded-2xl overflow-hidden group">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
+            </FadeUp>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
@@ -845,12 +1097,14 @@ export default function Home() {
       <LoadingScreen />
 
       <HeroSection />
+      <PullQuoteSection />
+      <PhotoMosaic />
       <OnThisDayWidget events={userEvents} />
-      <MarqueeTicker />
       <HowItWorksSection />
-      <PlayYourStorySection events={userEvents} />
       <MarqueeTicker />
       <FeaturesSection />
+      <ShowcaseSection />
+      <PlayYourStorySection events={userEvents} />
       <TimelinePreview events={userEvents} />
       <MarqueeTicker />
       <MapPreview events={userEvents} />
