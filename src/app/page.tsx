@@ -156,22 +156,30 @@ function HeroSection() {
         className="absolute bottom-0 left-0 right-0 z-10 overflow-hidden pointer-events-none"
         style={{ height: "30vh" }}
       >
-        <svg viewBox="0 0 1200 300" className="w-full h-full" preserveAspectRatio="none">
-          <defs>
-            <path id="curve" d="M -100,250 Q 300,50 600,150 Q 900,250 1300,80" fill="none" />
-          </defs>
-          <motion.text
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.12 }}
-            transition={{ delay: 2, duration: 2 }}
-            className="fill-current text-chrono-text"
-            style={{ fontSize: "28px", fontFamily: "'EB Garamond', Georgia, serif" }}
-          >
-            <textPath href="#curve" startOffset="0%">
-              memories &middot; milestones &middot; places &middot; stories &middot; chapters &middot; your journey &middot; beautifully mapped
-            </textPath>
-          </motion.text>
-        </svg>
+        <div className="w-[200%] h-full flow-text-track">
+          <svg viewBox="0 0 2400 300" className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+              <path id="curve1" d="M 0,250 Q 300,50 600,150 Q 900,250 1200,80" fill="none" />
+              <path id="curve2" d="M 1200,250 Q 1500,50 1800,150 Q 2100,250 2400,80" fill="none" />
+            </defs>
+            <text
+              className="fill-current text-chrono-text"
+              style={{ fontSize: "28px", fontFamily: "'EB Garamond', Georgia, serif", opacity: 0.12 }}
+            >
+              <textPath href="#curve1" startOffset="0%">
+                memories · milestones · places · stories · chapters · your journey · beautifully mapped · memories · milestones
+              </textPath>
+            </text>
+            <text
+              className="fill-current text-chrono-text"
+              style={{ fontSize: "28px", fontFamily: "'EB Garamond', Georgia, serif", opacity: 0.12 }}
+            >
+              <textPath href="#curve2" startOffset="0%">
+                memories · milestones · places · stories · chapters · your journey · beautifully mapped · memories · milestones
+              </textPath>
+            </text>
+          </svg>
+        </div>
       </motion.div>
     </section>
   );
@@ -255,15 +263,18 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[140px] px-6 overflow-hidden">
-      <GradientBlob color="green" size="md" className="-left-60 top-20 opacity-25" />
-      <div className="max-w-5xl mx-auto">
+    <section className="relative py-[100px] md:py-[180px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      {/* Subtle gradient orbs on dark bg */}
+      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-900/30 via-green-900/20 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-emerald-900/20 via-teal-900/10 to-transparent blur-3xl pointer-events-none" />
+
+      <div className="relative max-w-5xl mx-auto">
         <FadeUp className="text-center mb-20">
-          <span className="section-label mb-5 block">How It Works</span>
-          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
+          <span className="text-[13px] tracking-[0.12em] uppercase text-emerald-400/80 font-body font-medium mb-5 block">How It Works</span>
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-white">
             Three steps to your
             <br />
-            <em>life story</em>
+            <em className="text-emerald-300/90">life story</em>
           </h2>
         </FadeUp>
 
@@ -271,21 +282,71 @@ function HowItWorksSection() {
           {steps.map((step, i) => (
             <FadeUp key={step.number} delay={i * 0.15} className="relative text-center">
               {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-4 left-[60%] right-[-40%] h-px bg-[var(--line)]" />
+                <div className="hidden md:block absolute top-4 left-[60%] right-[-40%] h-px bg-white/10" />
               )}
 
-              <div className="text-5xl md:text-6xl font-display text-chrono-accent/20 mb-4 mx-auto" style={{ fontWeight: 400 }}>
+              <div className="text-5xl md:text-6xl font-display text-emerald-400/20 mb-4 mx-auto" style={{ fontWeight: 400 }}>
                 {step.number}
               </div>
-              <h3 className="text-xl md:text-2xl font-display text-chrono-text mb-3" style={{ fontWeight: 400 }}>
+              <h3 className="text-xl md:text-2xl font-display text-white mb-3" style={{ fontWeight: 400 }}>
                 {step.title}
               </h3>
-              <p className="text-sm font-body font-normal leading-relaxed max-w-xs mx-auto text-chrono-muted">
+              <p className="text-sm font-body font-normal leading-relaxed max-w-xs mx-auto text-white/50">
                 {step.description}
               </p>
             </FadeUp>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ShowcaseSection() {
+  return (
+    <section className="relative py-[100px] md:py-[180px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+
+      {/* Floating orb */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-gradient-radial from-emerald-900/20 via-transparent to-transparent blur-3xl pointer-events-none" />
+
+      <div className="relative max-w-5xl mx-auto text-center">
+        <FadeUp>
+          <span className="text-[13px] tracking-[0.12em] uppercase text-emerald-400/80 font-body font-medium mb-5 block">Built Different</span>
+          <h2
+            className="font-display tracking-tight text-white mb-8"
+            style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)", lineHeight: 1.1, fontWeight: 400 }}
+          >
+            Not just another
+            <br />
+            <em className="text-emerald-300/90">journaling app</em>
+          </h2>
+          <p className="text-base md:text-lg font-body font-normal max-w-lg mx-auto leading-relaxed text-white/50 mb-16">
+            Crohna is a living canvas for your entire life. Every memory becomes
+            part of a beautiful, interactive narrative you can explore, share, and relive.
+          </p>
+        </FadeUp>
+
+        <FadeUp delay={0.2}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/10">
+            {[
+              { value: "∞", label: "Memories" },
+              { value: "AI", label: "Narratives" },
+              { value: "360°", label: "Life Map" },
+              { value: "24/7", label: "Your Data" },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-[#1A2B1F] px-6 py-10 md:py-14">
+                <div className="text-3xl md:text-4xl font-display text-emerald-300/80 mb-2" style={{ fontWeight: 400 }}>
+                  {stat.value}
+                </div>
+                <div className="text-[11px] font-body font-medium text-white/40 uppercase tracking-[0.15em]">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </FadeUp>
       </div>
     </section>
   );
@@ -519,8 +580,10 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[140px] px-6 overflow-hidden">
+    <section className="relative py-[80px] md:py-[160px] px-6 overflow-hidden bg-chrono-surface/50">
       <GradientBlob color="lavender" size="lg" className="-right-80 top-40 opacity-20" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">Features</span>
@@ -534,7 +597,7 @@ function FeaturesSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {features.map((feature, i) => (
             <FadeUp key={feature.title} delay={i * 0.1}>
-              <div className="group bg-[var(--card-bg)] p-8 md:p-10 rounded-2xl border border-[var(--line)] hover:border-[var(--line-hover)] transition-all duration-500 h-full">
+              <div className="group bg-[var(--card-bg)] p-8 md:p-10 rounded-2xl border border-[var(--line)] hover:border-chrono-accent/30 hover:shadow-[0_8px_32px_rgba(74,107,82,0.06)] transition-all duration-500 h-full">
                 <span className="text-xs font-body font-medium text-chrono-accent tracking-widest">{feature.number}</span>
                 <h3 className="text-2xl md:text-3xl font-display mt-3 mb-4 text-chrono-text tracking-tight" style={{ fontWeight: 400 }}>
                   {feature.title}
@@ -779,7 +842,8 @@ function UseCasesSection() {
   ];
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6">
+    <section className="relative py-[80px] md:py-[160px] px-6 bg-chrono-surface/50">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Example Use Cases</span>
@@ -791,7 +855,7 @@ function UseCasesSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {useCases.map((uc, i) => (
             <FadeUp key={uc.persona} delay={i * 0.12}>
-              <div className="bg-[var(--card-bg)] p-6 sm:p-8 md:p-10 rounded-2xl border border-[var(--line)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] h-full flex flex-col">
+              <div className="bg-[var(--card-bg)] p-6 sm:p-8 md:p-10 rounded-2xl border border-[var(--line)] hover:border-chrono-accent/30 hover:shadow-[0_8px_32px_rgba(74,107,82,0.06)] transition-all duration-500 h-full flex flex-col">
                 <p className="text-sm font-body font-normal leading-relaxed mb-8 flex-1 text-chrono-muted">
                   {uc.scenario}
                 </p>
@@ -826,32 +890,33 @@ function CTASection() {
   };
 
   return (
-    <section className="relative py-[80px] md:py-[160px] px-6 overflow-hidden">
-      <GradientBlob color="sage" size="lg" className="left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 opacity-30" />
-      <GradientBlob color="lavender" size="sm" className="-right-20 top-10 opacity-20" />
+    <section className="relative py-[100px] md:py-[200px] px-6 overflow-hidden bg-[#1A2B1F] text-white">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/10 to-transparent pointer-events-none" />
+
       <FadeUp className="relative max-w-3xl mx-auto text-center">
         <h2
-          className="font-display tracking-tight mb-8 text-chrono-text"
+          className="font-display tracking-tight mb-8 text-white"
           style={{ fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.05, fontWeight: 400 }}
         >
           Ready to map
           <br />
-          <em>your story?</em>
+          <em className="text-emerald-300/90">your story?</em>
         </h2>
-        <p className="text-lg font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-chrono-muted">
+        <p className="text-lg font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-white/50">
           Transform your memories into a beautiful, interactive timeline.
         </p>
 
         <div className="relative z-50 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={handleGetStarted}
-            className="group relative inline-flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-10 py-4 text-base font-body font-medium tracking-wide transition-all duration-300 bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_12px_rgba(74,107,82,0.25)]"
+            className="group relative inline-flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap rounded-xl px-10 py-4 text-base font-body font-medium tracking-wide transition-all duration-300 bg-emerald-400 text-[#1A2B1F] hover:bg-emerald-300 active:scale-[0.98] shadow-[0_2px_20px_rgba(110,231,183,0.2)]"
           >
             Get Started
           </button>
           <a
             href="/insights"
-            className="px-6 py-3 md:px-10 md:py-4 text-chrono-text hover:text-foreground border border-[var(--line-strong)] hover:border-[var(--line-hover)] rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
+            className="px-6 py-3 md:px-10 md:py-4 text-white/70 hover:text-white border border-white/15 hover:border-white/30 rounded-xl transition-all duration-300 text-sm font-body font-medium inline-block cursor-pointer"
           >
             See a Demo
           </a>
@@ -862,12 +927,12 @@ function CTASection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 1 }}
-          className="flex items-center justify-center gap-8 mt-14 text-xs font-body font-medium text-chrono-muted"
+          className="flex items-center justify-center gap-8 mt-14 text-xs font-body font-medium text-white/35"
         >
           <span>Free to start</span>
-          <span className="w-px h-3 bg-[var(--line)]" />
+          <span className="w-px h-3 bg-white/10" />
           <span>No credit card</span>
-          <span className="w-px h-3 bg-[var(--line)]" />
+          <span className="w-px h-3 bg-white/10" />
           <span>Your data stays private</span>
         </motion.div>
       </FadeUp>
@@ -877,17 +942,23 @@ function CTASection() {
 
 function PullQuoteSection() {
   return (
-    <section className="relative py-20 md:py-32 px-6 overflow-hidden">
+    <section className="relative py-24 md:py-40 px-6 overflow-hidden">
+      {/* Decorative line accents */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
+
       <div className="max-w-4xl mx-auto text-center">
         <FadeUp>
+          <div className="w-12 h-px bg-chrono-accent/40 mx-auto mb-10" />
           <blockquote
-            className="font-display text-3xl md:text-5xl leading-snug text-chrono-text"
+            className="font-display text-3xl md:text-5xl lg:text-6xl leading-snug text-chrono-text"
             style={{ fontWeight: 400 }}
           >
             &ldquo;After 150 years of the same journal,
             <br className="hidden md:block" />
-            <em> your life story</em> finally has a canvas.&rdquo;
+            <em className="text-chrono-accent"> your life story</em> finally has a canvas.&rdquo;
           </blockquote>
+          <div className="w-12 h-px bg-chrono-accent/40 mx-auto mt-10" />
         </FadeUp>
       </div>
     </section>
@@ -907,8 +978,9 @@ export default function Home() {
       <OnThisDayWidget events={userEvents} />
       <HowItWorksSection />
       <MarqueeTicker />
-      <PlayYourStorySection events={userEvents} />
       <FeaturesSection />
+      <ShowcaseSection />
+      <PlayYourStorySection events={userEvents} />
       <TimelinePreview events={userEvents} />
       <MarqueeTicker />
       <MapPreview events={userEvents} />

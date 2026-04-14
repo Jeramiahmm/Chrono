@@ -288,9 +288,9 @@ export default function Navigation() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-chrono-accent" />
-            <span className="text-[15px] font-display font-semibold tracking-wide text-chrono-text">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-3.5 h-3.5 rounded-full bg-chrono-accent group-hover:scale-110 transition-transform duration-300" />
+            <span className="text-[17px] font-body font-semibold tracking-[0.04em] text-chrono-text">
               Crohna
             </span>
           </Link>

@@ -27,13 +27,13 @@ export default function LoadingScreen() {
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="w-2.5 h-2.5 rounded-full bg-chrono-accent"
+              className="w-4 h-4 rounded-full bg-chrono-accent"
             />
             <motion.span
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
-              className="text-[16px] font-display font-semibold tracking-wide text-chrono-text"
+              className="text-[18px] font-body font-semibold tracking-[0.04em] text-chrono-text"
             >
               Crohna
             </motion.span>
