@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
@@ -11,7 +11,6 @@ import ParticleField from "@/components/three/ParticleField";
 import MarqueeTicker from "@/components/ui/MarqueeTicker";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import GradientBlob from "@/components/ui/GradientBlob";
-import { Clock, MapPin, Sparkles, BarChart3, Globe, Shield, Zap } from "lucide-react";
 import { useEvents } from "@/hooks/useEvents";
 import { useStories } from "@/hooks/useStories";
 
@@ -22,40 +21,6 @@ function FadeUp({ children, delay = 0, className = "" }: { children: React.React
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function AnimatedCounter({ target, suffix = "", duration = 2 }: { target: number; suffix?: string; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const motionVal = useMotionValue(0);
-  const springVal = useSpring(motionVal, { duration: duration * 1000, bounce: 0 });
-  const [display, setDisplay] = useState("0");
-
-  useEffect(() => {
-    if (inView) motionVal.set(target);
-  }, [inView, motionVal, target]);
-
-  useEffect(() => {
-    const unsub = springVal.on("change", (v) => setDisplay(Math.round(v).toLocaleString()));
-    return unsub;
-  }, [springVal]);
-
-  return <span ref={ref}>{display}{suffix}</span>;
-}
-
-function FloatingCard({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, rotateX: 8 }}
-      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-      viewport={{ once: true, margin: "-30px" }}
-      transition={{ delay, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -6, transition: { duration: 0.3 } }}
       className={className}
     >
       {children}
@@ -139,34 +104,24 @@ function HeroSection() {
   return (
     <section ref={ref} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <ParticleField />
-      <GradientBlob color="sage" size="lg" className="-top-40 -right-40 opacity-60" />
-      <GradientBlob color="lavender" size="md" className="-bottom-20 -left-40 opacity-40" />
-      <GradientBlob color="warm" size="sm" className="top-1/4 left-1/4 opacity-30" />
+      <GradientBlob color="sage" size="lg" className="-top-40 -right-40 opacity-50" />
+      <GradientBlob color="lavender" size="md" className="bottom-20 -left-40 opacity-30" />
 
       <motion.div
         style={{ y, scale }}
-        className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-24 md:pt-0"
+        className="relative z-10 text-center px-6 max-w-5xl mx-auto"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-chrono-accent/10 border border-chrono-accent/20 mb-8"
-        >
-          <Sparkles size={14} className="text-chrono-accent" />
-          <span className="text-xs font-body font-semibold text-chrono-accent tracking-wide uppercase">Your Digital Life Story</span>
-        </motion.div>
-
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-          className="font-display font-semibold tracking-tight mb-6 text-chrono-text"
-          style={{ fontSize: "clamp(2.8rem, 7vw, 5.2rem)", lineHeight: 1.1 }}
+          transition={{ delay: 0.3, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          className="font-display tracking-tight text-chrono-text"
+          style={{ fontSize: "clamp(3.5rem, 10vw, 7.5rem)", lineHeight: 1.05, fontWeight: 400 }}
         >
           <span className="block">Your life,</span>
-          <span className="block pb-1">
-            <AnimatedWord /> mapped
+          <span className="block">
+            <AnimatedWord />{" "}
+            <span className="font-semibold">mapped</span>
           </span>
         </motion.h1>
 
@@ -174,99 +129,50 @@ function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 1.2 }}
-          className="text-base md:text-lg font-body font-normal max-w-xl mx-auto leading-relaxed text-chrono-muted mb-2"
+          className="text-lg md:text-xl font-body font-normal max-w-lg mx-auto leading-relaxed text-chrono-muted mt-8"
         >
-          Transform your memories, milestones, and places into a stunning visual timeline.
+          The visual timeline that turns memories
           <br className="hidden sm:block" />
-          AI-powered narratives that tell the story of your life.
+          into clear, beautiful stories.
         </motion.p>
+
         <HeroButtons />
 
-        {/* Trust badges */}
-        <motion.div
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.4, duration: 1 }}
-          className="flex items-center justify-center gap-6 mt-10 text-[11px] font-body font-medium text-chrono-muted/70"
+          className="mt-6 text-sm font-body text-chrono-muted/60"
         >
-          <span className="flex items-center gap-1.5"><Shield size={12} className="text-chrono-accent" /> Private by default</span>
-          <span className="w-px h-3 bg-[var(--line)]" />
-          <span className="flex items-center gap-1.5"><Zap size={12} className="text-chrono-accent" /> AI-powered stories</span>
-          <span className="hidden sm:block w-px h-3 bg-[var(--line)]" />
-          <span className="hidden sm:flex items-center gap-1.5"><Globe size={12} className="text-chrono-accent" /> Google connected</span>
-        </motion.div>
+          Free to start. No credit card required.
+        </motion.p>
       </motion.div>
 
-      {/* Floating UI preview cards */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 mt-12 md:mt-16 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FloatingCard delay={1.0} className="md:translate-y-8">
-            <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] shadow-[0_8px_32px_rgba(0,0,0,0.06)] p-5 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-chrono-accent/10 flex items-center justify-center">
-                  <Clock size={16} className="text-chrono-accent" />
-                </div>
-                <div>
-                  <div className="text-sm font-display font-semibold text-chrono-text">Timeline</div>
-                  <div className="text-[11px] font-body text-chrono-muted">42 memories this year</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {["Graduated college", "Moved to NYC", "First marathon"].map((item, i) => (
-                  <motion.div key={item} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.5 + i * 0.15 }} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-chrono-surface/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-chrono-accent" />
-                    <span className="text-xs font-body text-chrono-text">{item}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </FloatingCard>
-
-          <FloatingCard delay={1.2}>
-            <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] shadow-[0_8px_32px_rgba(0,0,0,0.06)] p-5 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                  <Sparkles size={16} className="text-purple-500" />
-                </div>
-                <div>
-                  <div className="text-sm font-display font-semibold text-chrono-text">AI Story</div>
-                  <div className="text-[11px] font-body text-chrono-muted">Generated narrative</div>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }} className="h-2 rounded-full bg-chrono-surface w-full" />
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.9 }} className="h-2 rounded-full bg-chrono-surface w-5/6" />
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.0 }} className="h-2 rounded-full bg-chrono-surface w-4/6" />
-              </div>
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }} className="mt-3 text-xs font-body text-chrono-muted italic leading-relaxed">
-                &ldquo;This was the year everything changed. A chapter defined by bold moves...&rdquo;
-              </motion.p>
-            </div>
-          </FloatingCard>
-
-          <FloatingCard delay={1.4} className="md:translate-y-8">
-            <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] shadow-[0_8px_32px_rgba(0,0,0,0.06)] p-5 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                  <MapPin size={16} className="text-amber-500" />
-                </div>
-                <div>
-                  <div className="text-sm font-display font-semibold text-chrono-text">Places</div>
-                  <div className="text-[11px] font-body text-chrono-muted">7 cities explored</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {[{ city: "New York", n: 12 }, { city: "Tokyo", n: 8 }, { city: "London", n: 5 }, { city: "Paris", n: 3 }].map((p, i) => (
-                  <motion.div key={p.city} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.8 + i * 0.1 }} className="px-3 py-2 rounded-lg bg-chrono-surface/50 text-center">
-                    <div className="text-xs font-body font-semibold text-chrono-text">{p.city}</div>
-                    <div className="text-[10px] font-body text-chrono-muted">{p.n} memories</div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </FloatingCard>
-        </div>
-      </div>
+      {/* Curved flowing text - like Wispr's voice arc */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.6, duration: 1.5 }}
+        className="absolute bottom-0 left-0 right-0 z-10 overflow-hidden pointer-events-none"
+        style={{ height: "30vh" }}
+      >
+        <svg viewBox="0 0 1200 300" className="w-full h-full" preserveAspectRatio="none">
+          <defs>
+            <path id="curve" d="M -100,250 Q 300,50 600,150 Q 900,250 1300,80" fill="none" />
+          </defs>
+          <motion.text
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.12 }}
+            transition={{ delay: 2, duration: 2 }}
+            className="fill-current text-chrono-text"
+            style={{ fontSize: "28px", fontFamily: "'EB Garamond', Georgia, serif" }}
+          >
+            <textPath href="#curve" startOffset="0%">
+              memories &middot; milestones &middot; places &middot; stories &middot; chapters &middot; your journey &middot; beautifully mapped
+            </textPath>
+          </motion.text>
+        </svg>
+      </motion.div>
     </section>
   );
 }
@@ -354,7 +260,7 @@ function HowItWorksSection() {
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">How It Works</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
             Three steps to your
             <br />
             <em>life story</em>
@@ -368,10 +274,10 @@ function HowItWorksSection() {
                 <div className="hidden md:block absolute top-4 left-[60%] right-[-40%] h-px bg-[var(--line)]" />
               )}
 
-              <div className="w-10 h-10 rounded-xl bg-chrono-accent/10 flex items-center justify-center mb-5 mx-auto text-sm font-body font-semibold text-chrono-accent">
+              <div className="text-5xl md:text-6xl font-display text-chrono-accent/20 mb-4 mx-auto" style={{ fontWeight: 400 }}>
                 {step.number}
               </div>
-              <h3 className="text-lg font-display font-semibold text-chrono-text mb-3">
+              <h3 className="text-xl md:text-2xl font-display text-chrono-text mb-3" style={{ fontWeight: 400 }}>
                 {step.title}
               </h3>
               <p className="text-sm font-body font-normal leading-relaxed max-w-xs mx-auto text-chrono-muted">
@@ -473,7 +379,7 @@ function PlayYourStorySection({ events }: { events?: TimelineEvent[] }) {
       <div className="max-w-4xl mx-auto">
         <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">Experience</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Play your
             <br />
             <em>story</em>
@@ -591,28 +497,24 @@ function PlayYourStorySection({ events }: { events?: TimelineEvent[] }) {
 function FeaturesSection() {
   const features = [
     {
+      number: "01",
       title: "Timeline",
       description: "Every moment organized chronologically. A living record of the events that shaped your story.",
-      icon: Clock,
-      color: "bg-chrono-accent/10 text-chrono-accent",
     },
     {
+      number: "02",
       title: "Stories",
       description: "Beautiful, emotional summaries of your life chapters. Narratives crafted from your real experiences.",
-      icon: Sparkles,
-      color: "bg-purple-500/10 text-purple-500",
     },
     {
+      number: "03",
       title: "Places",
       description: "See where your life happened on an animated map with pins for every memory.",
-      icon: MapPin,
-      color: "bg-amber-500/10 text-amber-500",
     },
     {
+      number: "04",
       title: "Insights",
       description: "Discover patterns in your life — most active years, favorite cities, biggest milestones.",
-      icon: BarChart3,
-      color: "bg-blue-500/10 text-blue-500",
     },
   ];
 
@@ -622,7 +524,7 @@ function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-20">
           <span className="section-label mb-5 block">Features</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
             Everything you need to
             <br />
             <em>relive your story</em>
@@ -630,24 +532,19 @@ function FeaturesSection() {
         </FadeUp>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {features.map((feature, i) => {
-            const Icon = feature.icon;
-            return (
+          {features.map((feature, i) => (
             <FadeUp key={feature.title} delay={i * 0.1}>
-              <div className="group bg-[var(--card-bg)] p-6 sm:p-8 md:p-10 rounded-2xl border border-[var(--line)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:border-[var(--line-hover)] transition-all duration-500 h-full">
-                <div className={`w-11 h-11 rounded-xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-500`}>
-                  <Icon size={20} />
-                </div>
-                <h3 className="text-lg font-display font-semibold mb-3 text-chrono-text tracking-tight">
+              <div className="group bg-[var(--card-bg)] p-8 md:p-10 rounded-2xl border border-[var(--line)] hover:border-[var(--line-hover)] transition-all duration-500 h-full">
+                <span className="text-xs font-body font-medium text-chrono-accent tracking-widest">{feature.number}</span>
+                <h3 className="text-2xl md:text-3xl font-display mt-3 mb-4 text-chrono-text tracking-tight" style={{ fontWeight: 400 }}>
                   {feature.title}
                 </h3>
-                <p className="text-sm font-body font-normal leading-relaxed text-chrono-muted">
+                <p className="text-base font-body font-normal leading-relaxed text-chrono-muted">
                   {feature.description}
                 </p>
               </div>
             </FadeUp>
-            );
-          })}
+          ))}
         </div>
       </div>
     </section>
@@ -665,7 +562,7 @@ function TimelinePreview({ events }: { events?: TimelineEvent[] }) {
 
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Chapters of Your Life</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Your life <em>in motion</em>
           </h2>
           <p className="font-body font-normal max-w-md mx-auto text-sm leading-relaxed text-chrono-muted">
@@ -746,7 +643,7 @@ function MapPreview({ events }: { events?: TimelineEvent[] }) {
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">A Record of Where You&apos;ve Been</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             See where your
             <br />
             <em>story happened</em>
@@ -840,7 +737,7 @@ function StoriesPreview({ stories }: { stories?: AIStory[] }) {
       <div className="max-w-4xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Patterns in Your Story</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight mb-5 text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight mb-5 text-chrono-text">
             Narratives written about
             <br />
             <em>your life</em>
@@ -886,7 +783,7 @@ function UseCasesSection() {
       <div className="max-w-5xl mx-auto">
         <FadeUp className="text-center mb-24">
           <span className="section-label mb-5 block">Example Use Cases</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
+          <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text">
             How people use <em>Crohna</em>
           </h2>
         </FadeUp>
@@ -933,12 +830,15 @@ function CTASection() {
       <GradientBlob color="sage" size="lg" className="left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 opacity-30" />
       <GradientBlob color="lavender" size="sm" className="-right-20 top-10 opacity-20" />
       <FadeUp className="relative max-w-3xl mx-auto text-center">
-        <h2 className="text-3xl md:text-6xl font-display font-semibold tracking-tight mb-8 text-chrono-text">
+        <h2
+          className="font-display tracking-tight mb-8 text-chrono-text"
+          style={{ fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.05, fontWeight: 400 }}
+        >
           Ready to map
           <br />
           <em>your story?</em>
         </h2>
-        <p className="text-base font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-chrono-muted">
+        <p className="text-lg font-body font-normal max-w-md mx-auto mb-14 leading-relaxed text-chrono-muted">
           Transform your memories into a beautiful, interactive timeline.
         </p>
 
@@ -975,101 +875,20 @@ function CTASection() {
   );
 }
 
-function StatsStrip() {
-  const stats = [
-    { label: "Memories Captured", value: 10000, suffix: "+" },
-    { label: "Cities Mapped", value: 250, suffix: "+" },
-    { label: "Stories Generated", value: 1500, suffix: "+" },
-    { label: "Happy Users", value: 500, suffix: "+" },
-  ];
-
+function PullQuoteSection() {
   return (
-    <section className="relative py-16 md:py-24 px-6 overflow-hidden">
-      <GradientBlob color="sage" size="md" className="-right-40 top-0 opacity-30" />
-      <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {stats.map((stat, i) => (
-            <FadeUp key={stat.label} delay={i * 0.1} className="text-center">
-              <div className="text-3xl md:text-4xl font-display font-semibold text-chrono-text mb-2">
-                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-              </div>
-              <div className="text-xs font-body font-medium text-chrono-muted uppercase tracking-wider">
-                {stat.label}
-              </div>
-            </FadeUp>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      quote: "Crohna turned three years of scattered photos and memories into a beautiful timeline I actually enjoy looking at.",
-      name: "Sarah M.",
-      role: "Designer",
-      initial: "S",
-      color: "bg-chrono-accent/10 text-chrono-accent",
-    },
-    {
-      quote: "The AI stories blew me away. It wrote a narrative about my college years that genuinely made me emotional.",
-      name: "James K.",
-      role: "Engineer",
-      initial: "J",
-      color: "bg-purple-500/10 text-purple-500",
-    },
-    {
-      quote: "Finally, a way to see all my travels on a map with the stories that go with them. This is what Google Photos should be.",
-      name: "Maria L.",
-      role: "Travel Blogger",
-      initial: "M",
-      color: "bg-amber-500/10 text-amber-500",
-    },
-  ];
-
-  return (
-    <section className="relative py-[80px] md:py-[140px] px-6 overflow-hidden">
-      <GradientBlob color="lavender" size="lg" className="-left-60 top-20 opacity-25" />
-      <GradientBlob color="warm" size="sm" className="right-20 bottom-20 opacity-20" />
-      <div className="max-w-5xl mx-auto">
-        <FadeUp className="text-center mb-16">
-          <span className="section-label mb-5 block">What People Say</span>
-          <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight text-chrono-text">
-            Loved by people who
-            <br />
-            <em>cherish their memories</em>
-          </h2>
+    <section className="relative py-20 md:py-32 px-6 overflow-hidden">
+      <div className="max-w-4xl mx-auto text-center">
+        <FadeUp>
+          <blockquote
+            className="font-display text-3xl md:text-5xl leading-snug text-chrono-text"
+            style={{ fontWeight: 400 }}
+          >
+            &ldquo;After 150 years of the same journal,
+            <br className="hidden md:block" />
+            <em> your life story</em> finally has a canvas.&rdquo;
+          </blockquote>
         </FadeUp>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {testimonials.map((t, i) => (
-            <FloatingCard key={t.name} delay={i * 0.15}>
-              <div className="bg-[var(--card-bg)] rounded-2xl border border-[var(--line)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-6 md:p-8 h-full flex flex-col">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => (
-                    <svg key={j} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-sm font-body font-normal leading-relaxed text-chrono-muted flex-1 mb-6">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl ${t.color} flex items-center justify-center text-sm font-body font-semibold`}>
-                    {t.initial}
-                  </div>
-                  <div>
-                    <div className="text-sm font-body font-medium text-chrono-text">{t.name}</div>
-                    <div className="text-[11px] font-body text-chrono-muted">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            </FloatingCard>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -1084,18 +903,16 @@ export default function Home() {
       <LoadingScreen />
 
       <HeroSection />
-      <StatsStrip />
+      <PullQuoteSection />
       <OnThisDayWidget events={userEvents} />
-      <MarqueeTicker />
       <HowItWorksSection />
-      <PlayYourStorySection events={userEvents} />
       <MarqueeTicker />
+      <PlayYourStorySection events={userEvents} />
       <FeaturesSection />
       <TimelinePreview events={userEvents} />
       <MarqueeTicker />
       <MapPreview events={userEvents} />
       <StoriesPreview stories={userStories} />
-      <TestimonialsSection />
       <UseCasesSection />
       <CTASection />
     </>
