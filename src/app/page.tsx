@@ -1,21 +1,32 @@
 "use client";
 
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import { Clock, MapPin, BookOpen, BarChart3, Layers, Shield, Zap, Camera, Calendar, Globe, ArrowRight, Play } from "lucide-react";
 import LoadingScreen from "@/components/ui/LoadingScreen";
-import GradientBlob from "@/components/ui/GradientBlob";
+import { ScrollRevealText } from "@/components/ui/ScrollRevealText";
 
-const PHOTOS = [
-  { src: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80", alt: "New York City" },
-  { src: "https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=800&q=80", alt: "Los Angeles" },
-  { src: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80", alt: "Golden Gate Bridge" },
-  { src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80", alt: "Road trip" },
-  { src: "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&q=80", alt: "Skiing in Vail" },
-  { src: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=800&q=80", alt: "San Francisco" },
+const HERO_CENTER_IMAGE = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2000";
+
+const HERO_SIDE_IMAGES = [
+  { src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000", alt: "Portrait moment", position: "left" },
+  { src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=1000", alt: "Celebration", position: "left" },
+  { src: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1000", alt: "City lights", position: "right" },
+  { src: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1000", alt: "Friends together", position: "right" },
+];
+
+const GALLERY_IMAGES = [
+  "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80",
+  "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=800&q=80",
+  "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&q=80",
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80",
+  "https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=800&q=80",
+  "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
+  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=80",
+  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80",
 ];
 
 function FadeUp({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -56,19 +67,25 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
-const HERO_WORDS = ["beautifully", "elegantly"] as const;
+const HERO_TEXT = "Your life, beautifully mapped";
 
 function HeroSection() {
   const { data: session, status } = useSession();
-  const [wordIdx, setWordIdx] = useState(0);
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setWordIdx((i) => (i + 1) % HERO_WORDS.length), 4000);
-    return () => clearInterval(t);
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const scrollableHeight = window.innerHeight * 2;
+      const scrolled = -rect.top;
+      const progress = Math.max(0, Math.min(1, scrolled / scrollableHeight));
+      setScrollProgress(progress);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleCTA = () => {
@@ -76,88 +93,260 @@ function HeroSection() {
     else signIn("google", { callbackUrl: "/timeline" });
   };
 
+  // Text fades out first (0 to 0.2)
+  const textOpacity = Math.max(0, 1 - (scrollProgress / 0.2));
+  // Image transforms start after text fades (0.2 to 1)
+  const imageProgress = Math.max(0, Math.min(1, (scrollProgress - 0.2) / 0.8));
+  // Smooth interpolations matching template exactly
+  const centerWidth = 100 - (imageProgress * 58); // 100% to 42%
+  const centerHeight = 100 - (imageProgress * 30); // 100% to 70%
+  const sideWidth = imageProgress * 22; // 0% to 22%
+  const sideOpacity = imageProgress;
+  const sideTranslateLeft = -100 + (imageProgress * 100);
+  const sideTranslateRight = 100 - (imageProgress * 100);
+  const borderRadius = imageProgress * 24;
+  const gap = imageProgress * 16;
+  const sideTranslateY = -(imageProgress * 15);
+
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <GradientBlob color="sage" size="lg" className="-top-40 -right-40 opacity-40" />
-      <GradientBlob color="lavender" size="md" className="bottom-20 -left-40 opacity-20" />
-      <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.8 }} className="flex items-center justify-center gap-3 mb-10">
-          {[{ icon: Globe, label: "Web" }, { icon: Camera, label: "Photos" }, { icon: Calendar, label: "Calendar" }].map(({ icon: Icon, label }) => (
-            <span key={label} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-chrono-surface border border-[var(--line)] text-xs font-body font-medium text-chrono-muted">
-              <Icon size={13} strokeWidth={1.8} /> {label}
-            </span>
-          ))}
-        </motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }} className="font-display tracking-tight text-chrono-text" style={{ fontSize: "clamp(3.5rem, 10vw, 7.5rem)", lineHeight: 1.05, fontWeight: 500 }}>
-          <span className="block">Your life,</span>
-          <span className="block">
-            <span className="inline-block relative align-bottom overflow-visible" style={{ lineHeight: "inherit", paddingRight: "0.08em" }}>
-              <span className="invisible italic">beautifully</span>
-              <AnimatePresence mode="wait">
-                <motion.span key={HERO_WORDS[wordIdx]} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="absolute inset-0 italic text-chrono-accent text-right" style={{ lineHeight: "inherit" }}>
-                  {HERO_WORDS[wordIdx]}
-                </motion.span>
-              </AnimatePresence>
-            </span>{" "}
-            <span className="font-black">mapped</span>
-          </span>
-        </motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1 }} className="text-lg md:text-xl font-body max-w-lg mx-auto leading-relaxed text-chrono-text/60 mt-8">
-          The visual timeline that turns memories into clear, beautiful stories.
-        </motion.p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
-          <button onClick={handleCTA} className="group inline-flex cursor-pointer items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-body font-medium bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_16px_rgba(61,90,68,0.3)] transition-all duration-300">
-            Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-          </button>
-          <Link href="/insights" className="px-8 py-3.5 text-chrono-text/70 hover:text-chrono-text border border-chrono-text/15 hover:border-chrono-text/30 rounded-xl transition-all text-sm font-body font-medium">
-            View Insights
-          </Link>
+    <section ref={sectionRef} className="relative bg-chrono-bg">
+      {/* Sticky container for scroll animation */}
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <div className="flex h-full w-full items-center justify-center">
+          {/* Bento Grid Container */}
+          <div
+            className="relative flex h-full w-full items-stretch justify-center"
+            style={{ gap: `${gap}px`, padding: `${imageProgress * 16}px`, paddingBottom: `${60 + (imageProgress * 40)}px` }}
+          >
+            {/* Left Column */}
+            <div
+              className="flex flex-col will-change-transform"
+              style={{
+                width: `${sideWidth}%`,
+                gap: `${gap}px`,
+                transform: `translateX(${sideTranslateLeft}%) translateY(${sideTranslateY}%)`,
+                opacity: sideOpacity,
+              }}
+            >
+              {HERO_SIDE_IMAGES.filter(img => img.position === "left").map((img, idx) => (
+                <div
+                  key={idx}
+                  className="relative overflow-hidden will-change-transform"
+                  style={{ flex: 1, borderRadius: `${borderRadius}px` }}
+                >
+                  <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="22vw" unoptimized />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Hero Image - Center */}
+            <div
+              className="relative overflow-hidden will-change-transform"
+              style={{
+                width: `${centerWidth}%`,
+                height: `${centerHeight}%`,
+                flex: "0 0 auto",
+                borderRadius: `${borderRadius}px`,
+              }}
+            >
+              <Image
+                src={HERO_CENTER_IMAGE}
+                alt="Life moments collage"
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+
+              {/* Overlay Text - Fades out first */}
+              <div
+                className="absolute inset-0 flex items-end overflow-hidden"
+                style={{ opacity: textOpacity }}
+              >
+                <h1 className="w-full text-[12vw] md:text-[10vw] lg:text-[8vw] font-display font-medium leading-[0.85] tracking-tighter text-white pb-8 px-6">
+                  {HERO_TEXT.split("").map((letter, index) => (
+                    <span
+                      key={index}
+                      className="inline-block animate-[slideUp_0.8s_ease-out_forwards] opacity-0"
+                      style={{
+                        animationDelay: `${index * 0.04}s`,
+                        transition: "all 1.5s",
+                        transitionTimingFunction: "cubic-bezier(0.86, 0, 0.07, 1)",
+                      }}
+                    >
+                      {letter === " " ? "\u00A0" : letter}
+                    </span>
+                  ))}
+                </h1>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div
+              className="flex flex-col will-change-transform"
+              style={{
+                width: `${sideWidth}%`,
+                gap: `${gap}px`,
+                transform: `translateX(${sideTranslateRight}%) translateY(${sideTranslateY}%)`,
+                opacity: sideOpacity,
+              }}
+            >
+              {HERO_SIDE_IMAGES.filter(img => img.position === "right").map((img, idx) => (
+                <div
+                  key={idx}
+                  className="relative overflow-hidden will-change-transform"
+                  style={{ flex: 1, borderRadius: `${borderRadius}px` }}
+                >
+                  <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="22vw" unoptimized />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }} className="mt-6 text-sm font-body text-chrono-text/40">Free to start. No credit card required.</motion.p>
-      </motion.div>
+      </div>
+
+      {/* Scroll space to enable animation */}
+      <div className="h-[200vh]" />
+
+      {/* Tagline Section with CTA */}
+      <div className="px-6 pt-32 pb-28 md:pt-48 md:px-12 md:pb-36 lg:px-20 lg:pt-56 lg:pb-44">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="flex items-center justify-center gap-3 mb-10">
+            {[{ icon: Globe, label: "Web" }, { icon: Camera, label: "Photos" }, { icon: Calendar, label: "Calendar" }].map(({ icon: Icon, label }) => (
+              <span key={label} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-chrono-surface border border-[var(--line)] text-xs font-body font-medium text-chrono-muted">
+                <Icon size={13} strokeWidth={1.8} /> {label}
+              </span>
+            ))}
+          </div>
+          <p className="text-2xl leading-relaxed text-chrono-muted md:text-3xl lg:text-[2.5rem] lg:leading-snug font-body">
+            The visual timeline that turns memories into clear, beautiful stories.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+            <button onClick={handleCTA} className="group inline-flex cursor-pointer items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-body font-medium bg-chrono-accent text-white hover:opacity-90 active:scale-[0.98] shadow-[0_2px_16px_rgba(61,90,68,0.3)] transition-all duration-300">
+              Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <Link href="/insights" className="px-8 py-3.5 text-chrono-text/70 hover:text-chrono-text border border-chrono-text/15 hover:border-chrono-text/30 rounded-xl transition-all text-sm font-body font-medium">
+              View Insights
+            </Link>
+          </div>
+          <p className="mt-6 text-sm font-body text-chrono-text/40">Free to start. No credit card required.</p>
+        </div>
+      </div>
     </section>
   );
 }
 
-function PhotoParallaxSection() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y1 = useTransform(scrollYProgress, [0, 1], [40, -40]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [80, -30]);
+function MomentsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [leftTranslateX, setLeftTranslateX] = useState(-100);
+  const [rightTranslateX, setRightTranslateX] = useState(100);
+  const [titleOpacity, setTitleOpacity] = useState(1);
+  const rafRef = useRef<number | null>(null);
+
+  const updateTransforms = useCallback(() => {
+    if (!sectionRef.current) return;
+    const rect = sectionRef.current.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const sectionHeight = sectionRef.current.offsetHeight;
+    const scrollableRange = sectionHeight - windowHeight;
+    const scrolled = -rect.top;
+    const progress = Math.max(0, Math.min(1, scrolled / scrollableRange));
+    setLeftTranslateX((1 - progress) * -100);
+    setRightTranslateX((1 - progress) * 100);
+    setTitleOpacity(1 - progress);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(updateTransforms);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    updateTransforms();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [updateTransforms]);
 
   return (
-    <section ref={ref} className="relative py-20 md:py-32 px-6 overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent" />
-      <FadeUp className="text-center mb-16 max-w-3xl mx-auto">
-        <h2 className="text-4xl md:text-6xl font-display tracking-tight text-chrono-text" style={{ fontWeight: 600 }}>
-          <span className="italic text-chrono-accent">Every moment</span> deserves<br />a beautiful canvas
-        </h2>
-        <p className="text-base md:text-lg font-body text-chrono-text/55 mt-6 max-w-xl mx-auto leading-relaxed">
-          Capture, organize, and relive — turning scattered moments into a cohesive life story.
-        </p>
-      </FadeUp>
-      {/* Bento grid — organized, intentional layout */}
-      <div className="max-w-6xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-3 md:gap-4 auto-rows-[160px] md:auto-rows-[200px]">
-        <motion.div style={{ y: y1 }} whileHover={{ scale: 1.03 }} className="relative col-span-2 md:col-span-5 row-span-2 rounded-2xl overflow-hidden shadow-xl cursor-pointer group">
-          <Image src={PHOTOS[0].src} alt={PHOTOS[0].alt} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="40vw" unoptimized />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <span className="absolute bottom-4 left-4 text-white text-sm font-display font-semibold">{PHOTOS[0].alt}</span>
-        </motion.div>
-        <motion.div style={{ y: y2 }} whileHover={{ scale: 1.03 }} className="relative col-span-2 md:col-span-4 row-span-1 rounded-2xl overflow-hidden shadow-xl cursor-pointer group">
-          <Image src={PHOTOS[1].src} alt={PHOTOS[1].alt} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="33vw" unoptimized />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <span className="absolute bottom-4 left-4 text-white text-sm font-display font-semibold">{PHOTOS[1].alt}</span>
-        </motion.div>
-        <motion.div style={{ y: y1 }} whileHover={{ scale: 1.03 }} className="relative col-span-2 md:col-span-3 row-span-2 rounded-2xl overflow-hidden shadow-xl cursor-pointer group">
-          <Image src={PHOTOS[2].src} alt={PHOTOS[2].alt} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="25vw" unoptimized />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <span className="absolute bottom-4 left-4 text-white text-sm font-display font-semibold">{PHOTOS[2].alt}</span>
-        </motion.div>
-        <motion.div style={{ y: y2 }} whileHover={{ scale: 1.03 }} className="relative col-span-2 md:col-span-4 row-span-1 rounded-2xl overflow-hidden shadow-xl cursor-pointer group">
-          <Image src={PHOTOS[3].src} alt={PHOTOS[3].alt} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="33vw" unoptimized />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <span className="absolute bottom-4 left-4 text-white text-sm font-display font-semibold">{PHOTOS[3].alt}</span>
-        </motion.div>
+    <section className="bg-chrono-bg">
+      {/* Scroll-Animated Card Grid */}
+      <div ref={sectionRef} className="relative" style={{ height: "200vh" }}>
+        <div className="sticky top-0 h-screen flex items-center justify-center">
+          <div className="relative w-full">
+            {/* Title - positioned behind the cards */}
+            <div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+              style={{ opacity: titleOpacity }}
+            >
+              <h2 className="text-[12vw] md:text-[10vw] lg:text-[8vw] font-display font-medium leading-[0.95] tracking-tighter text-chrono-text text-center px-6">
+                Your moments,<br />beautifully organized.
+              </h2>
+            </div>
+
+            {/* Card Grid */}
+            <div className="relative z-10 grid grid-cols-1 gap-4 px-6 md:grid-cols-2 md:px-12 lg:px-20">
+              {/* Left Card - comes from left */}
+              <div
+                className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+                style={{
+                  transform: `translate3d(${leftTranslateX}%, 0, 0)`,
+                  backfaceVisibility: "hidden",
+                }}
+              >
+                <Image
+                  src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80"
+                  alt="A cozy home moment"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <span className="backdrop-blur-md px-4 py-2 text-sm font-body font-medium rounded-full bg-white/20 text-white">
+                    First Apartment — 2019
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Card - comes from right */}
+              <div
+                className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+                style={{
+                  transform: `translate3d(${rightTranslateX}%, 0, 0)`,
+                  backfaceVisibility: "hidden",
+                }}
+              >
+                <Image
+                  src="https://images.unsplash.com/photo-1523050854058-8df90110c476?w=800&q=80"
+                  alt="Adventure travel"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <span className="backdrop-blur-md px-4 py-2 text-sm font-body font-medium rounded-full bg-white/20 text-white">
+                    Summer Road Trip — 2023
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Description with ScrollRevealText */}
+      <div className="px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-xs uppercase tracking-widest text-chrono-muted font-body mb-8">Your Timeline</p>
+          <ScrollRevealText
+            text="Capture, organize, and relive — turning scattered moments into a cohesive life story. Every photo, every milestone, every adventure, beautifully connected."
+            className="font-display"
+          />
+        </div>
       </div>
     </section>
   );
@@ -273,45 +462,91 @@ function HowItWorksSection() {
   );
 }
 
-function PhotoStripSection() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x1 = useTransform(scrollYProgress, [0, 1], ["0%", "-15%"]);
-  const x2 = useTransform(scrollYProgress, [0, 1], ["-10%", "5%"]);
+function GalleryScrollSection() {
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [sectionHeight, setSectionHeight] = useState("100vh");
+  const [translateX, setTranslateX] = useState(0);
+  const rafRef = useRef<number | null>(null);
 
-  const row1 = [
-    "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80",
-    "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=600&q=80",
-    "https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600&q=80",
-    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80",
-    "https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=600&q=80",
-    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600&q=80",
-  ];
-  const row2 = [
-    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600&q=80",
-    "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&q=80",
-    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
-    "https://images.unsplash.com/photo-1523050854058-8df90110c476?w=600&q=80",
-    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80",
-    "https://images.unsplash.com/photo-1546156929-a4c0ac411f47?w=600&q=80",
-  ];
+  useEffect(() => {
+    const calculateHeight = () => {
+      if (!containerRef.current) return;
+      const containerWidth = containerRef.current.scrollWidth;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const totalHeight = viewportHeight + (containerWidth - viewportWidth);
+      setSectionHeight(`${totalHeight}px`);
+    };
+    const timer = setTimeout(calculateHeight, 100);
+    window.addEventListener("resize", calculateHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", calculateHeight);
+    };
+  }, []);
+
+  const updateTransform = useCallback(() => {
+    if (!galleryRef.current || !containerRef.current) return;
+    const rect = galleryRef.current.getBoundingClientRect();
+    const containerWidth = containerRef.current.scrollWidth;
+    const viewportWidth = window.innerWidth;
+    const totalScrollDistance = containerWidth - viewportWidth;
+    const scrolled = Math.max(0, -rect.top);
+    const progress = Math.min(1, scrolled / totalScrollDistance);
+    setTranslateX(progress * -totalScrollDistance);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(updateTransform);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    updateTransform();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [updateTransform]);
 
   return (
-    <section ref={ref} className="relative py-8 md:py-12 overflow-hidden space-y-4">
-      <motion.div style={{ x: x1 }} className="flex gap-4 px-4">
-        {row1.map((src, i) => (
-          <motion.div key={i} whileHover={{ scale: 1.05 }} className="relative w-[260px] md:w-[340px] aspect-[16/10] rounded-xl overflow-hidden shrink-0 shadow-lg">
-            <Image src={src} alt={`Memory ${i + 1}`} fill className="object-cover" sizes="340px" unoptimized />
-          </motion.div>
-        ))}
-      </motion.div>
-      <motion.div style={{ x: x2 }} className="flex gap-4 px-4">
-        {row2.map((src, i) => (
-          <motion.div key={i} whileHover={{ scale: 1.05 }} className="relative w-[260px] md:w-[340px] aspect-[16/10] rounded-xl overflow-hidden shrink-0 shadow-lg">
-            <Image src={src} alt={`Memory ${i + 7}`} fill className="object-cover" sizes="340px" unoptimized />
-          </motion.div>
-        ))}
-      </motion.div>
+    <section
+      ref={galleryRef}
+      className="relative bg-chrono-bg"
+      style={{ height: sectionHeight }}
+    >
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <div className="flex h-full items-center">
+          <div
+            ref={containerRef}
+            className="flex gap-6 px-6"
+            style={{
+              transform: `translate3d(${translateX}px, 0, 0)`,
+              backfaceVisibility: "hidden",
+              touchAction: "pan-y",
+            }}
+          >
+            {GALLERY_IMAGES.map((src, index) => (
+              <div
+                key={index}
+                className="relative h-[70vh] w-[85vw] flex-shrink-0 overflow-hidden rounded-2xl md:w-[60vw] lg:w-[45vw]"
+                style={{ transform: "translateZ(0)" }}
+              >
+                <Image
+                  src={src}
+                  alt={`Memory ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 85vw, (max-width: 1024px) 60vw, 45vw"
+                  priority={index < 3}
+                  unoptimized
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -413,10 +648,10 @@ export default function Home() {
     <>
       <LoadingScreen />
       <HeroSection />
-      <PhotoParallaxSection />
+      <MomentsSection />
       <FeaturesSection />
       <HowItWorksSection />
-      <PhotoStripSection />
+      <GalleryScrollSection />
       <StatsSection />
       <CapabilitiesStrip />
       <CTASection />

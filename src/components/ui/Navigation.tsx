@@ -275,7 +275,7 @@ export default function Navigation() {
     <>
       {/* Desktop: Tubelight Navbar */}
       <div className="hidden md:block">
-        <NavBar items={tubelightItems} extraActions={extraActions} />
+        <NavBar items={tubelightItems} extraActions={extraActions} scrolled={scrolled} />
       </div>
 
       {/* Mobile: hamburger nav */}

@@ -28,7 +28,9 @@ const config: Config = {
       },
       fontFamily: {
         display: ["'EB Garamond'", "Georgia", "serif"],
+        editorial: ["'PP Editorial New'", "'EB Garamond'", "Georgia", "serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
+        sans: ["'Inter'", "var(--font-body)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "2xl": "16px",
