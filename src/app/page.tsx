@@ -77,6 +77,10 @@ function HeroSection() {
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Floating colored circles */}
+      <motion.div animate={{ y: [0, -20, 0], x: [0, 10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[10%] w-72 h-72 rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/20 blur-3xl pointer-events-none" />
+      <motion.div animate={{ y: [0, 15, 0], x: [0, -15, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-[20%] right-[8%] w-80 h-80 rounded-full bg-gradient-to-br from-violet-200/30 to-purple-300/20 blur-3xl pointer-events-none" />
+      <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[40%] right-[25%] w-40 h-40 rounded-full bg-gradient-to-br from-emerald-200/30 to-teal-200/20 blur-2xl pointer-events-none" />
       <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 text-center px-6 max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.8 }} className="mb-10">
           <span className="inline-block px-4 py-1.5 rounded-full bg-chrono-accent/10 text-chrono-accent text-xs font-body font-bold tracking-widest uppercase">Your life, visualized</span>
@@ -156,6 +160,52 @@ function PhotoParallaxSection() {
   );
 }
 
+function ColorMarquee() {
+  const words = [
+    { text: "memories", color: "text-amber-500" },
+    { text: "milestones", color: "text-violet-500" },
+    { text: "adventures", color: "text-emerald-500" },
+    { text: "chapters", color: "text-rose-500" },
+    { text: "places", color: "text-blue-500" },
+    { text: "growth", color: "text-teal-500" },
+    { text: "stories", color: "text-orange-500" },
+    { text: "journeys", color: "text-indigo-500" },
+  ];
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf: number, x = 0;
+    const animate = () => {
+      if (!trackRef.current) return;
+      x -= 0.5;
+      const half = trackRef.current.scrollWidth / 2;
+      if (Math.abs(x) >= half) x += half;
+      trackRef.current.style.transform = `translateX(${x}px)`;
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <div className="w-full overflow-hidden py-6 border-y border-[var(--line)]">
+      <div ref={trackRef} className="flex whitespace-nowrap will-change-transform">
+        {Array.from({ length: 4 }).map((_, setIdx) => (
+          <div key={setIdx} className="flex items-center">
+            {words.map((w) => (
+              <span key={`${setIdx}-${w.text}`} className="flex items-center mx-5">
+                <span className={`w-2 h-2 rounded-full ${w.color} opacity-60 mr-5`} />
+                <span className={`font-display italic text-lg tracking-wide ${w.color} opacity-70`}>{w.text}</span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FeaturesSection() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -163,10 +213,10 @@ function FeaturesSection() {
   const xRight = useTransform(scrollYProgress, [0, 1], [30, 0]);
 
   const features = [
-    { title: "Timeline", desc: "Every moment organized chronologically — a living record that grows with you.", photo: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" },
-    { title: "Life Stories", desc: "Narratives crafted from your real experiences. Your story, told beautifully.", photo: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80" },
-    { title: "Life Map", desc: "See where your life happened — every pin is a memory on an interactive globe.", photo: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80" },
-    { title: "Insights", desc: "Discover patterns you never saw — most active years, favorite places, milestones.", photo: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" },
+    { title: "Timeline", desc: "Every moment organized chronologically — a living record that grows with you.", photo: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80", accent: "text-emerald-600", dot: "bg-emerald-500", bg: "bg-emerald-50/50 dark:bg-emerald-950/20" },
+    { title: "Life Stories", desc: "Narratives crafted from your real experiences. Your story, told beautifully.", photo: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80", accent: "text-violet-600", dot: "bg-violet-500", bg: "bg-violet-50/50 dark:bg-violet-950/20" },
+    { title: "Life Map", desc: "See where your life happened — every pin is a memory on an interactive globe.", photo: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80", accent: "text-amber-600", dot: "bg-amber-500", bg: "bg-amber-50/50 dark:bg-amber-950/20" },
+    { title: "Insights", desc: "Discover patterns you never saw — most active years, favorite places, milestones.", photo: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80", accent: "text-blue-600", dot: "bg-blue-500", bg: "bg-blue-50/50 dark:bg-blue-950/20" },
   ];
 
   return (
@@ -195,8 +245,11 @@ function FeaturesSection() {
                       <div className="absolute inset-0 bg-black/15" />
                     </div>
                     {/* Content side */}
-                    <div className="flex-1 p-8 md:p-14 flex flex-col justify-center bg-[var(--card-bg)]">
-                      <span className="text-[11px] font-body font-bold tracking-[0.2em] uppercase text-chrono-accent mb-3 block">0{i + 1}</span>
+                    <div className={`flex-1 p-8 md:p-14 flex flex-col justify-center ${f.bg}`}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className={`w-2 h-2 rounded-full ${f.dot}`} />
+                        <span className={`text-[11px] font-body font-bold tracking-[0.2em] uppercase ${f.accent}`}>0{i + 1}</span>
+                      </div>
                       <h3 className="text-3xl md:text-4xl font-display text-chrono-text tracking-tight mb-4" style={{ fontWeight: 800 }}>{f.title}</h3>
                       <p className="text-base md:text-lg font-body leading-relaxed text-chrono-text/55 max-w-md">{f.desc}</p>
                     </div>
@@ -217,12 +270,15 @@ function HowItWorksSection() {
   const imgY = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   const steps = [
-    { num: "01", title: "Add your memories", desc: "Import from Google Photos, connect your calendar, or add events manually." },
-    { num: "02", title: "Watch your story unfold", desc: "See your life organized with maps, chapters, and interactive insights." },
-    { num: "03", title: "Discover your narrative", desc: "Personal narratives crafted from your life chapters — your story, told right." },
+    { num: "01", title: "Add your memories", desc: "Import from Google Photos, connect your calendar, or add events manually.", color: "text-amber-400" },
+    { num: "02", title: "Watch your story unfold", desc: "See your life organized with maps, chapters, and interactive insights.", color: "text-violet-400" },
+    { num: "03", title: "Discover your narrative", desc: "Personal narratives crafted from your life chapters — your story, told right.", color: "text-emerald-400" },
   ];
   return (
     <section ref={ref} className="relative py-24 md:py-44 px-6 overflow-hidden bg-[#111] text-white">
+      {/* Floating colored orbs */}
+      <motion.div animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }} transition={{ duration: 7, repeat: Infinity }} className="absolute top-[10%] right-[15%] w-48 h-48 rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
+      <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 9, repeat: Infinity }} className="absolute bottom-[15%] left-[10%] w-56 h-56 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
       <div className="relative max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
         <div>
           <FadeUp>
@@ -231,7 +287,7 @@ function HowItWorksSection() {
           {steps.map((s, i) => (
             <SlideIn key={s.num} delay={i * 0.15} from="left">
               <div className="flex gap-6 mb-12 group">
-                <span className="text-5xl md:text-6xl font-display text-white/10 leading-none shrink-0" style={{ fontWeight: 800 }}>{s.num}</span>
+                <span className={`text-5xl md:text-6xl font-display ${s.color} opacity-30 leading-none shrink-0`} style={{ fontWeight: 800 }}>{s.num}</span>
                 <div className="pt-1">
                   <h3 className="text-xl md:text-2xl font-display text-white mb-2" style={{ fontWeight: 600 }}>{s.title}</h3>
                   <p className="text-sm md:text-base font-body text-white/45 leading-relaxed">{s.desc}</p>
@@ -306,18 +362,18 @@ function StatsSection() {
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--line)] rounded-3xl overflow-hidden">
           {[
-            { value: 10, suffix: "k+", label: "Memories" },
-            { value: 50, suffix: "+", label: "Cities" },
-            { value: 365, suffix: "", label: "Days" },
-            { value: 100, suffix: "%", label: "Private" },
+            { value: 10, suffix: "k+", label: "Memories", color: "text-emerald-600 dark:text-emerald-400" },
+            { value: 50, suffix: "+", label: "Cities", color: "text-amber-600 dark:text-amber-400" },
+            { value: 365, suffix: "", label: "Days", color: "text-violet-600 dark:text-violet-400" },
+            { value: 100, suffix: "%", label: "Private", color: "text-rose-600 dark:text-rose-400" },
           ].map((stat, i) => (
             <ScaleIn key={stat.label} delay={i * 0.1}>
-              <div className="text-center p-8 md:p-12 bg-[var(--card-bg)]">
-                <div className="text-4xl md:text-6xl font-display text-chrono-text mb-2" style={{ fontWeight: 800 }}>
+              <motion.div whileHover={{ scale: 1.05, y: -4 }} className="text-center p-8 md:p-12 bg-[var(--card-bg)] cursor-default">
+                <div className={`text-4xl md:text-6xl font-display ${stat.color} mb-2`} style={{ fontWeight: 800 }}>
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
                 <div className="text-[11px] font-body font-bold text-chrono-text/35 uppercase tracking-[0.2em]">{stat.label}</div>
-              </div>
+              </motion.div>
             </ScaleIn>
           ))}
         </div>
@@ -327,33 +383,68 @@ function StatsSection() {
 }
 
 function MadeForYouSection() {
-  const pills = ["Travelers", "Students", "Professionals", "Creatives", "Parents", "Athletes", "Journalers", "Everyone"];
+  const pills = [
+    { text: "Travelers", border: "border-amber-400/40", hover: "hover:bg-amber-400/20", text_color: "text-amber-300" },
+    { text: "Students", border: "border-violet-400/40", hover: "hover:bg-violet-400/20", text_color: "text-violet-300" },
+    { text: "Professionals", border: "border-blue-400/40", hover: "hover:bg-blue-400/20", text_color: "text-blue-300" },
+    { text: "Creatives", border: "border-rose-400/40", hover: "hover:bg-rose-400/20", text_color: "text-rose-300" },
+    { text: "Parents", border: "border-emerald-400/40", hover: "hover:bg-emerald-400/20", text_color: "text-emerald-300" },
+    { text: "Athletes", border: "border-orange-400/40", hover: "hover:bg-orange-400/20", text_color: "text-orange-300" },
+    { text: "Journalers", border: "border-teal-400/40", hover: "hover:bg-teal-400/20", text_color: "text-teal-300" },
+    { text: "Everyone", border: "border-white/40", hover: "hover:bg-white/20", text_color: "text-white" },
+  ];
   return (
     <section className="relative py-20 md:py-32 px-6">
       <div className="max-w-4xl mx-auto">
         <ScaleIn>
-          <div className="bg-[#111] rounded-[2rem] p-10 md:p-16">
-            <h2 className="text-4xl md:text-6xl font-display tracking-tight text-white mb-8" style={{ fontWeight: 700 }}>
+          <div className="relative bg-[#111] rounded-[2rem] p-10 md:p-16 overflow-hidden">
+            <motion.div animate={{ x: [0, 20, 0], y: [0, -10, 0] }} transition={{ duration: 10, repeat: Infinity }} className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
+            <motion.div animate={{ x: [0, -15, 0], y: [0, 15, 0] }} transition={{ duration: 8, repeat: Infinity }} className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+            <h2 className="relative text-4xl md:text-6xl font-display tracking-tight text-white mb-8" style={{ fontWeight: 700 }}>
               Crohna is made<br /><em className="text-white/50">for you</em>
             </h2>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="relative flex flex-wrap gap-2.5">
               {pills.map((pill, i) => (
                 <motion.span
-                  key={pill}
+                  key={pill.text}
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 + i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  whileHover={{ scale: 1.08, backgroundColor: "rgba(255,255,255,0.15)" }}
-                  className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-sm font-body font-medium cursor-default transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  className={`px-5 py-2.5 rounded-full border ${pill.border} ${pill.hover} ${pill.text_color} text-sm font-body font-medium cursor-default transition-all duration-300`}
                 >
-                  {pill}
+                  {pill.text}
                 </motion.span>
               ))}
             </div>
           </div>
         </ScaleIn>
       </div>
+    </section>
+  );
+}
+
+function QuoteSection() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const rotate = useTransform(scrollYProgress, [0, 1], [-3, 3]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
+
+  return (
+    <section ref={ref} className="relative py-20 md:py-36 px-6 overflow-hidden bg-gradient-to-br from-violet-50 via-rose-50 to-amber-50 dark:from-violet-950/30 dark:via-rose-950/20 dark:to-amber-950/30">
+      <motion.div style={{ rotate, scale }} className="max-w-4xl mx-auto text-center">
+        <FadeUp>
+          <p className="text-3xl md:text-5xl font-display tracking-tight text-chrono-text leading-tight" style={{ fontWeight: 500 }}>
+            &ldquo;The best way to predict the future is to <em className="text-violet-600 dark:text-violet-400">remember</em> where you&rsquo;ve been.&rdquo;
+          </p>
+          <div className="flex items-center justify-center gap-3 mt-10">
+            <div className="w-8 h-px bg-gradient-to-r from-violet-400 to-rose-400" />
+            <span className="text-sm font-body font-medium text-chrono-text/40">Your story matters</span>
+            <div className="w-8 h-px bg-gradient-to-r from-rose-400 to-amber-400" />
+          </div>
+        </FadeUp>
+      </motion.div>
     </section>
   );
 }
@@ -371,6 +462,7 @@ function CTASection() {
 
   return (
     <section ref={ref} className="relative py-28 md:py-52 px-6 overflow-hidden bg-[#111] text-white">
+      <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-violet-500/20 via-rose-500/10 to-amber-500/20 blur-3xl pointer-events-none" />
       <motion.div style={{ scale }} className="relative max-w-3xl mx-auto text-center">
         <FadeUp>
           <h2 className="font-display tracking-tight mb-8 text-white" style={{ fontSize: "clamp(2.8rem, 8vw, 6.5rem)", lineHeight: 1.05, fontWeight: 700 }}>
@@ -396,10 +488,12 @@ export default function Home() {
       <LoadingScreen />
       <HeroSection />
       <PhotoParallaxSection />
+      <ColorMarquee />
       <FeaturesSection />
       <HowItWorksSection />
       <PhotoStripSection />
       <StatsSection />
+      <QuoteSection />
       <MadeForYouSection />
       <CTASection />
     </>
