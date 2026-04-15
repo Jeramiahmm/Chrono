@@ -17,9 +17,10 @@ interface NavBarProps {
   items: NavItem[]
   className?: string
   extraActions?: React.ReactNode
+  scrolled?: boolean
 }
 
-export function NavBar({ items, className, extraActions }: NavBarProps) {
+export function NavBar({ items, className, extraActions, scrolled = true }: NavBarProps) {
   const pathname = usePathname()
   const [hoveredTab, setHoveredTab] = useState<string | null>(null)
 
@@ -30,7 +31,12 @@ export function NavBar({ items, className, extraActions }: NavBarProps) {
         className
       )}
     >
-      <div className="max-w-5xl mx-auto flex items-center justify-between py-3 px-6 rounded-2xl bg-[var(--card-bg)]/80 backdrop-blur-xl border border-[var(--line)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className={cn(
+        "max-w-5xl mx-auto flex items-center justify-between py-3 px-6 rounded-2xl transition-all duration-500",
+        scrolled
+          ? "bg-[var(--card-bg)]/80 backdrop-blur-xl border border-[var(--line)] shadow-[0_1px_3px_var(--shadow-subtle)]"
+          : "bg-transparent border border-transparent shadow-none"
+      )}>
         <Link href="/" className="flex items-center">
           <span className="text-[18px] font-body font-bold tracking-[-0.01em] text-chrono-text">
             Crohna
@@ -48,7 +54,7 @@ export function NavBar({ items, className, extraActions }: NavBarProps) {
                 onMouseEnter={() => setHoveredTab(item.name)}
                 onMouseLeave={() => setHoveredTab(null)}
                 className={cn(
-                  "relative cursor-pointer text-sm font-body font-medium px-4 py-2 rounded-xl transition-colors duration-300",
+                  "relative cursor-pointer text-sm font-body font-medium px-4 py-2 rounded-xl transition-colors duration-300 outline-none focus-visible:ring-2 focus-visible:ring-chrono-accent focus-visible:ring-offset-2",
                   isActive
                     ? "text-chrono-accent"
                     : "text-chrono-muted hover:text-chrono-text"

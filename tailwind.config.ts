@@ -28,7 +28,9 @@ const config: Config = {
       },
       fontFamily: {
         display: ["'EB Garamond'", "Georgia", "serif"],
+        editorial: ["'PP Editorial New'", "'EB Garamond'", "Georgia", "serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
+        sans: ["'Inter'", "var(--font-body)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "2xl": "16px",
@@ -74,8 +76,8 @@ const config: Config = {
           "50%": { opacity: "0.5", transform: "scale(1.1)" },
         },
         whitePulse: {
-          "0%, 100%": { boxShadow: "0 0 8px rgba(61,90,68,0.12)" },
-          "50%": { boxShadow: "0 0 20px rgba(61,90,68,0.25)" },
+          "0%, 100%": { boxShadow: "0 0 8px rgba(92,64,51,0.12)" },
+          "50%": { boxShadow: "0 0 20px rgba(92,64,51,0.25)" },
         },
         markerRing: {
           "0%": { transform: "scale(1)", opacity: "0.6" },
