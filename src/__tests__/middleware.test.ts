@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { middleware } from "@/middleware";
+import { middleware, config } from "@/middleware";
 import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 vi.unmock("@/middleware");
+
+// Compiles a Next.js path-to-regexp matcher into a RegExp we can test against.
+function matchesMiddleware(pathname: string): boolean {
+  return config.matcher.some((pattern) => {
+    const regex = new RegExp(`^${pattern.replace(/\((\?[!=].*?)\)/g, "($1)")}$`);
+    return regex.test(pathname);
+  });
+}
 
 function makeRequest(
   pathname: string,
@@ -21,28 +29,40 @@ beforeEach(() => {
   process.env.NEXTAUTH_SECRET = "test-secret-for-middleware";
 });
 
-describe("Middleware — Public Routes", () => {
-  it("allows /api/health without auth", async () => {
-    const req = makeRequest("/api/health");
-    const res = await middleware(req);
-
-    expect(res.status).not.toBe(401);
-    expect(res.status).not.toBe(403);
+describe("Middleware — Matcher excludes public routes", () => {
+  // The matcher excludes /api/auth/* and /api/health from middleware execution
+  // entirely, so the Edge function is never invoked for the OAuth flow or the
+  // health endpoint. This is what keeps Google login working — the middleware
+  // bundle (which pulls in next-auth/jwt → jose → hkdf) is never loaded for
+  // /api/auth/callback/google, /api/auth/csrf, /api/auth/error, etc.
+  it("does not match /api/health", () => {
+    expect(matchesMiddleware("/api/health")).toBe(false);
   });
 
-  it("allows /api/auth/callback without auth", async () => {
-    const req = makeRequest("/api/auth/callback/google");
-    const res = await middleware(req);
-
-    expect(res.status).not.toBe(401);
-    expect(res.status).not.toBe(403);
+  it("does not match /api/auth/callback/google", () => {
+    expect(matchesMiddleware("/api/auth/callback/google")).toBe(false);
   });
 
-  it("allows /api/auth/session without auth", async () => {
-    const req = makeRequest("/api/auth/session");
-    const res = await middleware(req);
+  it("does not match /api/auth/error", () => {
+    expect(matchesMiddleware("/api/auth/error")).toBe(false);
+  });
 
-    expect(res.status).not.toBe(401);
+  it("does not match /api/auth/csrf", () => {
+    expect(matchesMiddleware("/api/auth/csrf")).toBe(false);
+  });
+
+  it("does not match /api/auth/signin/google", () => {
+    expect(matchesMiddleware("/api/auth/signin/google")).toBe(false);
+  });
+
+  it("matches /api/events", () => {
+    expect(matchesMiddleware("/api/events")).toBe(true);
+  });
+
+  it("matches /api/google/photos (an /api/auth-prefixed lookalike)", () => {
+    // Make sure we didn't accidentally exclude paths like /api/authors/* or /api/healthcheck
+    expect(matchesMiddleware("/api/authentication")).toBe(true);
+    expect(matchesMiddleware("/api/healthy")).toBe(true);
   });
 });
 

@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-// Public API routes that don't require authentication
-const PUBLIC_API_ROUTES = ["/api/health", "/api/auth"];
-
-function isPublicApiRoute(pathname: string): boolean {
-  return PUBLIC_API_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
-}
-
-/**
- * Validates the Origin header on mutating requests as CSRF defense-in-depth.
- */
 function validateCsrfInMiddleware(req: NextRequest): NextResponse | null {
   const method = req.method.toUpperCase();
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") return null;
@@ -51,19 +39,9 @@ function validateCsrfInMiddleware(req: NextRequest): NextResponse | null {
 }
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  // Skip public routes
-  if (isPublicApiRoute(pathname)) {
-    return NextResponse.next();
-  }
-
-  // CSRF check on all mutating API requests
   const csrfError = validateCsrfInMiddleware(req);
   if (csrfError) return csrfError;
 
-  // Auth check: all non-public API routes require a valid session
-  // Enforced on ALL methods (GET included) as defense-in-depth
   const method = req.method.toUpperCase();
   if (method !== "OPTIONS") {
     const secret = process.env.NEXTAUTH_SECRET;
@@ -79,6 +57,11 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
+// Exclude /api/auth/* (NextAuth handles its own flow, including CSRF) and
+// /api/health (must be reachable without auth) from middleware execution.
+// Doing this in the matcher — not at runtime — guarantees the Edge function
+// is never invoked for these paths, so NextAuth's OAuth callback can complete
+// even if the middleware bundle has issues in the Edge runtime.
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/((?!auth/|auth$|health/|health$).*)"],
 };
